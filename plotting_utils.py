@@ -89,3 +89,99 @@ def plot_power_spectra(probe_spectra):
     fig.suptitle('Power Spectra by Shank and Probe')
     #plt.tight_layout(rect=[0, 0, 1, 0.95])  # Adjust layout to make room for title
     plt.show()
+
+
+def plot_single_spike_waveform(waveforms, spike_index=0, color_map='viridis'):
+    """
+    Plots waveforms for a single spike from multiple channels with vertical offsets and color coding.
+
+    Args:
+    waveforms (numpy.ndarray): 3D array with shape (num_spikes, num_channels, samples_per_spike)
+    spike_index (int): Index of the spike to plot.
+    color_map (str): Name of the matplotlib colormap to use for different channels.
+    """
+    num_channels = waveforms.shape[2]
+    samples_per_spike = waveforms.shape[1]
+
+    # Setup color map
+    cmap = plt.get_cmap(color_map)
+    colors = cmap(np.linspace(0, 1, num_channels))
+
+    # Calculate offsets to separate the waveforms vertically
+    offsets = 100
+
+    # Create a figure and axis
+    plt.figure(figsize=(10, 6))
+    ax = plt.gca()
+
+    # Plot each channel's waveform with an offset
+    for channel in range(num_channels):
+        offset_waveform = waveforms[spike_index, :, channel] + offsets*channel
+        ax.plot(offset_waveform, label=f'Channel {channel + 1}', color=colors[channel])
+
+    # Add labels and title
+    ax.set_title('Single Spike Waveforms Across Channels')
+    ax.set_xlabel('Sample Index')
+    ax.set_ylabel('Amplitude + Offset')
+    ax.legend(loc='upper right')
+
+    # Add grid for better readability
+    ax.grid(True)
+
+    plt.show()
+
+
+def plot_waveform_and_power(waveforms, power_spectrum, limit_channel,max_peak, text, color_map='viridis'):
+    num_channels = waveforms.shape[1]
+    samples_per_spike = waveforms.shape[0]
+    n_freqs = power_spectrum['power'].shape[0]
+
+    # Setup color map
+    cmap = plt.get_cmap(color_map)
+    colors = cmap(np.linspace(0, 1, num_channels))
+
+    # Create a figure with subplots
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6), gridspec_kw={'width_ratios': [3, 1]})
+
+    # Calculate offsets to separate the waveforms and power spectra vertically
+    offset_increment = 0.001  # Adjust based on your data for better visibility
+
+    # Plot each channel's waveform with an offset in ax1
+    for channel in range(num_channels):
+        offset_waveform = waveforms[:, channel] + offset_increment * channel
+        if channel == limit_channel:
+            ax1.plot(offset_waveform, label=f'LIMITChannel {channel + 1}', color=colors[channel], linestyle='-', linewidth=2,
+                     alpha=1)
+        else:
+            ax1.plot(offset_waveform, label=f'Channel {channel + 1}', color=colors[channel], linestyle='--', alpha=0.5)
+        if channel == max_peak:
+            ax1.plot(offset_waveform, label=f'MAXChannel {channel + 1}', color = 'Red', linestyle='--', linewidth=2,
+                     alpha=1)
+
+    # Plot the normalized power spectrum in ax2
+    for channel in range(num_channels):
+        normalized_power = power_spectrum['power'][:, channel] / np.max(power_spectrum['power'][:, channel])
+        if channel == limit_channel:
+            ax2.plot(power_spectrum['frequency'], normalized_power + offset_increment * channel,
+                     color=colors[channel], linestyle='-', linewidth=2, alpha=1)
+        else:
+            ax2.plot(power_spectrum['frequency'], normalized_power + offset_increment * channel,
+                     color=colors[channel], linestyle='--', alpha=0.5)
+
+    # Setting labels and titles
+    ax1.set_title('Single Spike Waveforms Across Channels CLASS:' + text, fontsize=20)
+    ax1.set_xlabel('Sample Index')
+    ax1.set_ylabel('Amplitude + Offset')
+    ax1.legend(loc='upper right')
+    ax1.grid(False)
+
+    ax2.set_title('Normalized Power Spectrum Across Channels')
+    ax2.set_xlabel('Frequency (Hz)')
+    ax2.set_ylabel('Normalized Power + Offset')
+    #ax2.set_yscale('log')  # Assuming frequency needs a log scale for better visualization
+    ax2.grid(False)
+    ax2.set_ylim([0,10*offset_increment])
+
+    plt.tight_layout()
+    plt.show()
+    return fig

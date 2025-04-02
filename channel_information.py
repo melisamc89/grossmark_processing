@@ -130,7 +130,7 @@ channel_organization['Cicero']['09012014'] = {
             'RightCA1Shank4': 11,
             'RightCA1Shank5': 12,
             'RightCA1Shank6': 13,
-            'RightCA1Shank7': 14,
+            'RightCA1ExtraChannels': 14,
         }  # list(np.arange(8, 15))  #keep track of the spks files
     }
 }
