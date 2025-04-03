@@ -153,7 +153,8 @@ def compute_band_power_in_shanks(power_spectrum, low_freq, high_freq):
             # Find the indices where frequency is within the specified range
             band_mask = (freqs >= low_freq) & (freqs <= high_freq)
             # Sum the power values within this range
-            band_power_sum = np.sum(power[band_mask],axis=0)/np.sum(power,axis=0)
+            power = power/np.max(power, axis = 0)
+            band_power_sum = np.sum(power[band_mask],axis=0)
             bands_power[probe][shank_id] = band_power_sum
     return bands_power
 
@@ -249,4 +250,8 @@ def read_klusters_clu_file(filename):
     # The rest of the elements are the cluster assignments for each spike
     return num_clusters, cluster_ids[1:]
 
+def read_spikes_times(filename):
+    # Read the entire file into a NumPy array of int32
+    spikes_times = np.loadtxt(filename)
+    return spikes_times
 

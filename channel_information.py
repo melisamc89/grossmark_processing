@@ -8,6 +8,13 @@ number_of_channels = {
     'Gatsby': 134
 }
 
+rat_names = ['Achilles','Buddy','Cicero','Gatsby']
+rat_sessions = {}
+rat_sessions['Achilles'] = ['10252013','11012013']
+rat_sessions['Buddy'] = ['06272013']
+rat_sessions['Cicero'] = ['09012014','09102014','09172014']
+rat_sessions['Gatsby'] = ['08022013','08282013']
+
 channel_organization = {
     'Achilles': {},
     'Buddy': {},
@@ -58,11 +65,12 @@ channel_organization['Buddy']['06272013'] = {
     'Probe1': {
         'LeftCA1Shank1': list(range(1, 9)),
         'LeftCA1Shank2': list(range(9, 17)),
-        'LeftCA1Shank3': list(range(17, 23)),
+        'LeftCA1Shank3': list(range(17, 24)),
         'LeftCA1Shank4': [25,26,28,29,30,31,32],
-        'LeftCA1Shank5': list(range(32, 41)),
+        #'LeftCA1Shank4': list(range(25, 33)),
+        'LeftCA1Shank5': list(range(33, 41)),
         'LeftCA1Shank6': list(range(41, 49)),
-        'LeftCA1Shank7': list(range(49, 57)),
+        'LeftCA1Shank7': list(range(50, 57)), #### I will eliminate this shank
         'LeftCA1Shank8': [57,59,60,61,62,63,64],
         'Spk.Group': {
             'LeftCA1Shank1': 1,
@@ -82,7 +90,7 @@ channel_organization['Buddy']['06272013'] = {
         'RightCA1Shank4': list(range(89, 97)),
         'RightCA1Shank5': list(range(97, 105)),
         'RightCA1Shank6': list(range(105, 113)),
-        'RightCA1Shank7': list(range(113, 121)),
+        'RightCA1Shank7': list(range(114, 121)), ### I will eliminate this shank
         'RightCA1Shank8': list(range(121, 129)),
         'Spk.Group': {
             'RightCA1Shank1': 9,
@@ -146,7 +154,7 @@ channel_organization['Gatsby']['08022013'] = {
         'LeftCA1Shank5': list(range(33, 41)),
         'LeftCA1Shank6': list(range(41, 49)),
         'LeftCA1Shank7': list(range(49, 57)),
-        'LeftCA1Shank8': list(range(57, 65)),
+        'LeftCA1Shank8': list(range(58, 65)), ### will eliminate this shank
         'Spk.Group': {
             'LeftCA1Shank1': 1,
             'LeftCA1Shank2': 2,
@@ -221,3 +229,36 @@ channel_organization['Gatsby']['08282013'] = {
         }  # list(np.arange(8, 15))  #keep track of the spks files
     }
 }
+
+discarded_shanks = {}
+discarded_shanks['Achilles'] = {}
+discarded_shanks['Achilles']['10252013'] = {}
+discarded_shanks['Achilles']['10252013']['Probe1'] = ['LeftCA1Shank6','LeftCA1Shank3Extra']
+discarded_shanks['Achilles']['10252013']['Probe2'] = []
+discarded_shanks['Achilles']['11012013'] = {}
+discarded_shanks['Achilles']['11012013']['Probe1'] = []
+discarded_shanks['Achilles']['11012013']['Probe2'] = []
+discarded_shanks['Buddy'] = {}
+discarded_shanks['Buddy']['06272013'] = {}
+discarded_shanks['Buddy']['06272013']['Probe1'] = ['LeftCA1Shank7']
+discarded_shanks['Buddy']['06272013']['Probe2'] = ['RightCA1Shank7']
+discarded_shanks['Cicero'] = {}
+discarded_shanks['Cicero']['09012014'] = {}
+discarded_shanks['Cicero']['09012014']['Probe1'] = ['LeftCA1Shank3Extra']
+discarded_shanks['Cicero']['09012014']['Probe2'] = ['RightCA1ExtraChannels']
+discarded_shanks['Cicero']['09102014'] = {}
+discarded_shanks['Cicero']['09102014']['Probe1'] = ['LeftCA1Shank3Extra']
+discarded_shanks['Cicero']['09102014']['Probe2'] = ['RightCA1ExtraChannels']
+discarded_shanks['Cicero']['09172014'] = {}
+discarded_shanks['Cicero']['09172014']['Probe1'] = ['LeftCA1Shank3Extra']
+discarded_shanks['Cicero']['09172014']['Probe2'] = ['RightCA1ExtraChannels']
+
+discarded_shanks['Gatsby'] = {}
+discarded_shanks['Gatsby']['08022013'] = {}
+discarded_shanks['Gatsby']['08022013']['Probe1'] = ['LeftCA1Shank8']
+discarded_shanks['Gatsby']['08022013']['Probe2'] = []
+
+discarded_shanks['Gatsby']['08282013'] = {}
+discarded_shanks['Gatsby']['08282013']['Probe1'] = []
+discarded_shanks['Gatsby']['08282013']['Probe2'] = []
+

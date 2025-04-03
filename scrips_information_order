@@ -1,0 +1,19 @@
+
+
+
+This is the information about what each files generates and the order they need to be run by:
+
+1) lfp_analysis - > gruops the eeg file by shank, computes power expectrum and extract the channels con max ripple power
+(analysis done in the NREM period)
+1*) lfp_theta_extraction -> does the same as lfp_analysis but creates an output where the channel with max theta power in each
+shank, and also saves the channel with max theta power.
+(analysis done in the Maze period) (input spk and clu files)
+2) spk analysis - > Groups the spk and clusters information to combine waveforms and clusters. It creates a file with the mean
+waveform per cluster in each shank.
+3) deep_sup_classification -> loads outputs from 1 and 2, creates figures with waveforms and spectrograms for each channel in
+the shank.
+It outputs a dictionary that contains the cell classification for each cluster found in each shank.
+4)spikes_times_extration -> Creates a dictirionary with spikes times and classification.
+inputs res file and the deep_sup_classification file.
+output a dictionary that contains a list of spike times and a list of classification.
+5) spikes_maze_analysis---looks for spikes that occurs during the maze and creates spike matrix

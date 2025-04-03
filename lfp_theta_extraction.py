@@ -1,32 +1,15 @@
-from turtledemo.nim import computerzug
 
-import numpy as np
-import os
-import matplotlib.pyplot as plt
-import copy
 from src.general_utils import *
 from src.plotting_utils import *
-import scipy as sp
 from src.channel_information import *
-
-### declare general paths and folders structure to the data
-data_directory = '/home/melma31/Downloads/Grossmark'
-base_directory = '/home/melma31/Documents/time_project'
-output_directory = os.path.join(base_directory, 'output')
-figures_directory = os.path.join(base_directory, 'figures')
-
-rat_names = ['Achilles','Buddy','Cicero','Gatsby']
-rat_sessions = {}
-rat_sessions['Achilles'] = ['10252013','11012013']
-rat_sessions['Buddy'] = ['06272013']
-rat_sessions['Cicero'] = ['09012014','09102014','09172014']
-rat_sessions['Gatsby'] = ['09012014','08282013']
+from config import *
 
 ####start working on individual rats
 #####################################################################################
 #####################################################################################
 rat_index = 0
 session_index = 1
+
 rat_directory = os.path.join(data_directory, rat_names[rat_index])
 session_directory = rat_names[rat_index]+'_'+str(rat_sessions[rat_names[rat_index]][session_index])
 novelty_session_directory = os.path.join(data_directory, 'NoveltySessInfoMatFiles')

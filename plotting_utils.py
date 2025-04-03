@@ -89,6 +89,7 @@ def plot_power_spectra(probe_spectra):
     fig.suptitle('Power Spectra by Shank and Probe')
     #plt.tight_layout(rect=[0, 0, 1, 0.95])  # Adjust layout to make room for title
     plt.show()
+    return fig
 
 
 def plot_single_spike_waveform(waveforms, spike_index=0, color_map='viridis'):
@@ -147,7 +148,7 @@ def plot_waveform_and_power(waveforms, power_spectrum, limit_channel,max_peak, t
     offset_increment = 0.001  # Adjust based on your data for better visibility
 
     # Plot each channel's waveform with an offset in ax1
-    for channel in range(num_channels):
+    for channel in range(waveforms.shape[1]):
         offset_waveform = waveforms[:, channel] + offset_increment * channel
         if channel == limit_channel:
             ax1.plot(offset_waveform, label=f'LIMITChannel {channel + 1}', color=colors[channel], linestyle='-', linewidth=2,
@@ -158,8 +159,10 @@ def plot_waveform_and_power(waveforms, power_spectrum, limit_channel,max_peak, t
             ax1.plot(offset_waveform, label=f'MAXChannel {channel + 1}', color = 'Red', linestyle='--', linewidth=2,
                      alpha=1)
 
+    colors = cmap(np.linspace(0, 1, power_spectrum['power'].shape[1]))
+
         # Plot the normalized power spectrum in ax2 and fill area under the curve
-    for channel in range(num_channels):
+    for channel in range(power_spectrum['power'].shape[1]):
         frequencies = power_spectrum['frequency']
         power_values = power_spectrum['power'][:, channel]
         normalized_power = power_values / np.max(power_values)
@@ -172,16 +175,16 @@ def plot_waveform_and_power(waveforms, power_spectrum, limit_channel,max_peak, t
                      color=colors[channel], linestyle='--', alpha=0.5)
 
         # Highlight the area under the curve between 100 Hz and 250 Hz
-        idx = (frequencies >= 100) & (frequencies <= 250)
+        idx = (frequencies >= 100) & (frequencies <= 200)
         ax2.fill_between(frequencies[idx], offset_increment * channel, offset_power[idx], color=color, alpha=0.3)
 
         # Calculate and display the area under the curve
-        area = np.trapz(normalized_power[idx], frequencies[idx])
+        area = np.sum(normalized_power[idx])
         ax2.text(250, offset_power[idx][-1], f'{area:.2f}', fontsize=9, verticalalignment='bottom',
                  horizontalalignment='right')
 
     # Setting labels and titles
-    ax1.set_title('Single Spike Waveforms Across Channels CLASS:' + text, fontsize=20)
+    ax1.set_title('Mean Spike Waveforms CLASSFICATION:' + text, fontsize=20)
     ax1.set_xlabel('Sample Index')
     ax1.set_ylabel('Amplitude + Offset')
     ax1.legend(loc='upper right')
