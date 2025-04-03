@@ -2,7 +2,7 @@
 from src.general_utils import *
 from src.plotting_utils import *
 from src.channel_information import *
-from config import *
+from src.config import *
 
 ####start working on individual rats
 #####################################################################################
@@ -33,17 +33,17 @@ navigation_period = session_info['epochs']['mazeEpoch'][1] - session_info['epoch
 start_resting = int(session_info['epochs']['mazeEpoch'][0] * lfp_sr )
 end_resting = int(session_info['epochs']['mazeEpoch'][1] * lfp_sr )
 navigation_signal = get_signals_segment(lfp, start_resting, end_resting)
-
 del lfp
-target_fs = 500  # Target sampling rate in Hz
-downsampled_lfp= downsample_signal(navigation_signal, lfp_sr, target_fs)
-del navigation_signal
+
+#target_fs = 500  # Target sampling rate in Hz
+#downsampled_lfp= downsample_signal(navigation_signal, lfp_sr, target_fs)
+#del navigation_signal
 
 # Accessing data for Rat A, Session 1, Probe 1, Shank 2
 channels = channel_organization[rat_names[rat_index]][rat_sessions[rat_names[rat_index]][0]]
 #### process channels and signals and extract resting period
-shank_signals = group_lfp_by_shank(downsampled_lfp, channels)
-del downsampled_lfp
+shank_signals = group_lfp_by_shank(navigation_signal, channels)
+del navigation_signal
 ################################################
 ####        PLOTTING SINGALS #########
 ################################################
@@ -53,16 +53,19 @@ del downsampled_lfp
 #### COMPUTE POWER SPECTRA (and plot)               ########
 #################################################
 power_spectrum = compute_power_spectrum_in_shanks(shank_signals, target_fs)
-plot_power_spectra(power_spectrum)
+downsampled_power_spectrum = downsample_spectrum_in_shanks(power_spectrum, 1000)
+#plot_power_spectra(power_spectrum)
+del power_spectrum
 #################################################
 
 ##### combute ripple and theta bands total power
 #low_freq = 80
 #high_freq = 250
 #ripple_power = compute_band_power_in_shanks(power_spectrum,low_freq,high_freq)
+target_fs = 1250
 low_freq = 6
 high_freq = 12
-theta_power = compute_band_power_in_shanks(power_spectrum,low_freq,high_freq)
+theta_power = compute_band_power_in_shanks(downsampled_power_spectrum,low_freq,high_freq)
 
 spk_group = {}
 spk_group_probe_1 = channels['Probe1']['Spk.Group']
