@@ -5,11 +5,10 @@ import os
 import matplotlib.pyplot as plt
 import copy
 from src.general_utils import *
-from src.lfp_theta_extraction import spk_group
 from src.plotting_utils import *
 import scipy as sp
 from src.channel_information import *
-f
+
 ### declare general paths and folders structure to the data
 data_directory = '/home/melma31/Downloads/Grossmark'
 base_directory = '/home/melma31/Documents/time_project'
@@ -34,9 +33,7 @@ session_index = 0
 rat_directory = os.path.join(data_directory, rat_names[rat_index])
 session_directory = rat_names[rat_index]+'_'+str(rat_sessions[rat_names[rat_index]][session_index])
 novelty_session_directory = os.path.join(data_directory, 'NoveltySessInfoMatFiles')
-eef_file_name = rat_names[rat_index]+'_'+str(rat_sessions[rat_names[rat_index]][session_index]) + '.eeg'
 xml_file_name = rat_names[rat_index]+'_'+str(rat_sessions[rat_names[rat_index]][session_index]) + '.xml'
-eeg_file_directory = os.path.join(rat_directory, session_directory,eef_file_name)
 xml_file_directory = os.path.join(rat_directory, session_directory,xml_file_name)
 session_information_file_name =  rat_names[rat_index]+'_' + rat_sessions[rat_names[rat_index]][session_index] + '_sessInfo.mat'
 session_information_directory = os.path.join(data_directory,novelty_session_directory, session_information_file_name)
@@ -74,9 +71,6 @@ for probe in channels.keys():
         #################### VERIFY THIS ###############################3
         if number_of_spikes != number_of_clusters_id:
             print('Number of clusters does not match number of spikes')
-            cluster_ids = cluster_ids[:number_of_spikes]
-            number_of_clusters_id = len(cluster_ids)
-            unmatched_counter+= 1
         mean_waveform = np.zeros((len(clusters_names),32,number_of_channels))
         for index, i in enumerate(clusters_names):
             x = np.where(cluster_ids == i)[0]

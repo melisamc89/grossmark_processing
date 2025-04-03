@@ -79,16 +79,19 @@ del downsampled_lfp
 #### COMPUTE POWER SPECTRA (and plot)               ########
 #################################################
 power_spectrum = compute_power_spectrum_in_shanks(shank_signals, target_fs)
-plot_power_spectra(power_spectrum)
+##### downsampled power spectrum
+downsampled_power_spectrum = downsample_spectrum_in_shanks(power_spectrum,1000)
+plot_power_spectra(downsampled_power_spectrum)
 #################################################
 
+
 ##### combute ripple and theta bands total power
-low_freq = 80
+low_freq = 100
 high_freq = 250
-ripple_power = compute_band_power_in_shanks(power_spectrum,low_freq,high_freq)
+ripple_power = compute_band_power_in_shanks(downsampled_power_spectrum,low_freq,high_freq)
 low_freq = 6
 high_freq = 12
-theta_power = compute_band_power_in_shanks(power_spectrum,low_freq,high_freq)
+theta_power = compute_band_power_in_shanks(downsampled_power_spectrum,low_freq,high_freq)
 
 spk_group = {}
 spk_group_probe_1 = channels['Probe1']['Spk.Group']
@@ -111,35 +114,6 @@ for probe in spk_group:
 
 #max_theta = find_max_value_and_index(theta_power)
 #combined_dict['max_theta'] = max_theta
-
-output_dict = {}
-for probe in spk_group:
-    output_dict[probe] = {}
-    for shank in spk_group[probe]:
-        ripple_power_channel = combined_dict[probe][shank]['max_ripple_power_channel']
-        #theta_power_channel = combined_dict[probe][shank]['max_theta_power_channel']
-        output_dict[probe][shank] = {
-            'channel_information': combined_dict[probe][shank],
-            'ripple_channel': shank_signals[probe][shank][:,ripple_power_channel],
-            #'theta_channel':  shank_signals[probe][shank][:,theta_power_channel]
-        }
-    #max_theta_shank = combined_dict['max_theta'][probe]['shank']
-    #max_theta_index = combined_dict['max_theta'][probe]['index']
-    #theta_power_shank =  shank_signals[probe][max_theta_shank]
-    #output_dict[probe]['theta'] = theta_power_shank[:,max_theta_index]
-
-import pickle as pkl
-# Define the filename where the dictionary will be stored
-output_filename = rat_names[rat_index]+'_' + rat_sessions[rat_names[rat_index]][session_index] + '_ripple_output.pkl'
-# Open the file for writing in binary mode and dump the dictionary
-with open(os.path.join(output_directory , output_filename), 'wb') as file:
-    pkl.dump(output_dict, file)
-
-
-##### save also a downsampled power spectrum
-
-downsampled_power_spectrum = downsample_spectrum_in_shanks(power_spectrum,1000)
-
 output_dict = {}
 for probe in spk_group:
     output_dict[probe] = {}

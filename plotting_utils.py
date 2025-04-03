@@ -158,15 +158,27 @@ def plot_waveform_and_power(waveforms, power_spectrum, limit_channel,max_peak, t
             ax1.plot(offset_waveform, label=f'MAXChannel {channel + 1}', color = 'Red', linestyle='--', linewidth=2,
                      alpha=1)
 
-    # Plot the normalized power spectrum in ax2
+        # Plot the normalized power spectrum in ax2 and fill area under the curve
     for channel in range(num_channels):
-        normalized_power = power_spectrum['power'][:, channel] / np.max(power_spectrum['power'][:, channel])
+        frequencies = power_spectrum['frequency']
+        power_values = power_spectrum['power'][:, channel]
+        normalized_power = power_values / np.max(power_values)
+        offset_power = normalized_power + offset_increment * channel
+        color = colors[channel]
         if channel == limit_channel:
-            ax2.plot(power_spectrum['frequency'], normalized_power + offset_increment * channel,
-                     color=colors[channel], linestyle='-', linewidth=2, alpha=1)
+            ax2.plot(frequencies, offset_power, color=colors[channel], linestyle='-', linewidth=2, alpha=1)
         else:
-            ax2.plot(power_spectrum['frequency'], normalized_power + offset_increment * channel,
+            ax2.plot(frequencies, offset_power,
                      color=colors[channel], linestyle='--', alpha=0.5)
+
+        # Highlight the area under the curve between 100 Hz and 250 Hz
+        idx = (frequencies >= 100) & (frequencies <= 250)
+        ax2.fill_between(frequencies[idx], offset_increment * channel, offset_power[idx], color=color, alpha=0.3)
+
+        # Calculate and display the area under the curve
+        area = np.trapz(normalized_power[idx], frequencies[idx])
+        ax2.text(250, offset_power[idx][-1], f'{area:.2f}', fontsize=9, verticalalignment='bottom',
+                 horizontalalignment='right')
 
     # Setting labels and titles
     ax1.set_title('Single Spike Waveforms Across Channels CLASS:' + text, fontsize=20)
@@ -181,6 +193,24 @@ def plot_waveform_and_power(waveforms, power_spectrum, limit_channel,max_peak, t
     #ax2.set_yscale('log')  # Assuming frequency needs a log scale for better visualization
     ax2.grid(False)
     ax2.set_ylim([0,10*offset_increment])
+
+    plt.tight_layout()
+    plt.show()
+    return fig
+
+
+    # Setting labels and titles
+    ax1.set_title('Single Spike Waveforms Across Channels CLASS: ' + text, fontsize=20)
+    ax1.set_xlabel('Sample Index')
+    ax1.set_ylabel('Amplitude + Offset')
+    ax1.legend(loc='upper right')
+    ax1.grid(True)
+
+    ax2.set_title('Normalized Power Spectrum Across Channels')
+    ax2.set_xlabel('Frequency (Hz)')
+    ax2.set_ylabel('Normalized Power + Offset')
+    ax2.grid(True)
+    ax2.set_ylim([0, 10 * offset_increment])
 
     plt.tight_layout()
     plt.show()

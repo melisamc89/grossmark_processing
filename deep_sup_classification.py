@@ -7,6 +7,7 @@ import pickle as pkl
 import matplotlib.pyplot as plt
 import copy
 from src.general_utils import *
+from src.lfp_analysis import rat_directory
 from src.plotting_utils import *
 import scipy as sp
 from src.channel_information import *
@@ -50,8 +51,10 @@ for probe in waveform.keys():
     for shank in waveform[probe].keys():
         neuron_classification[probe][shank] = {}
         neuron_class_list = []
+        cluster_id_list = []
         for neuron in range(waveform[probe][shank]['waveform'].shape[0]):
             neuron_waveform = waveform[probe][shank]['waveform'][neuron,:,:]
+            cluster_id = waveform[probe][shank]['cluster_id'][neuron]
             peak_to_peak = -np.min(neuron_waveform, axis=0) + np.max(neuron_waveform, axis=0)
             max_index = np.argmax(peak_to_peak)
             power_spectrum = ripple[probe][shank]['power_spectrum']
@@ -61,9 +64,23 @@ for probe in waveform.keys():
             else:
                 classification = 'superficial'
             neuron_class_list.append(classification)
-            fig = plot_waveform_and_power(neuron_waveform, power_spectrum, max_power_spectrum_channel, max_index,
-                                          classification)
+            cluster_id_list.append(cluster_id)
+            #fig = plot_waveform_and_power(neuron_waveform, power_spectrum, max_power_spectrum_channel, max_index,
+            #                              classification)
 
-            savedir = figures_directory+'/'+rat_names[rat_index] + '_' + rat_sessions[rat_names[rat_index]][rat_session]+ '_' + probe + '_' + shank + '_' + str(waveform[probe][shank]['cluster_id'][neuron]) + '.jpg'
-            fig.savefig(savedir)
+            #savedir = figures_directory+'/'+rat_names[rat_index] + '_' + rat_sessions[rat_names[rat_index]][rat_session]
+            #if not os.path.exists(savedir):
+            #    os.makedirs(savedir)
+
+            #file_name = rat_names[rat_index] + '_' + rat_sessions[rat_names[rat_index]][rat_session] +'_' + probe + '_' + shank + '_' + str(waveform[probe][shank]['cluster_id'][neuron]) + '.jpg'
+            #file_directory = os.path.join(savedir, file_name)
+            #fig.savefig(file_directory)
+            #plt.close()
         neuron_classification[probe][shank]['classification'] = neuron_class_list
+        neuron_classification[probe][shank]['neuron_id'] = cluster_id_list
+
+# Define the filename where the dictionary will be stored
+output_filename = rat_names[rat_index]+'_' + rat_sessions[rat_names[rat_index]][rat_session] + '_neuron_classification_output.pkl'
+# Open the file for writing in binary mode and dump the dictionary
+with open(os.path.join(files_directory , output_filename), 'wb') as file:
+    pkl.dump(neuron_classification, file)
