@@ -17,3 +17,4 @@ It outputs a dictionary that contains the cell classification for each cluster f
 inputs res file and the deep_sup_classification file.
 output a dictionary that contains a list of spike times and a list of classification.
 5) spikes_maze_analysis---looks for spikes that occurs during the maze and creates spike matrix
+6)run deep sup analysis to create umaps and visualizations of the data in all neurons, deep and sup
