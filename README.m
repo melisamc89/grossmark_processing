@@ -53,4 +53,4 @@ Output: neural_data.pkl - Contains spike matrix during the maze period.
 7. Deep Sup Analysis
 Input: Various outputs from the above steps.
 
-Output: UMAP visualizations and further deep learning based analyses.
+Output: UMAP visualizations and further analyses.
