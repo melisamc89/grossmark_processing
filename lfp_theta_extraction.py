@@ -4,10 +4,6 @@ from src.plotting_utils import *
 from src.channel_information import *
 from src.config import *
 
-####start working on individual rats
-### will later create a loop on this
-rat_index = 0
-sessions = [[0,1],[0],[0,1,2],[0,1]]
 for rat_index in range(0,4):
     print('Extraction Ripple Bands from rat: ', rat_names[rat_index])
     for session_index in sessions[rat_index]:
@@ -21,6 +17,7 @@ for rat_index in range(0,4):
         xml_file_directory = os.path.join(rat_directory, session_directory,xml_file_name)
         session_information_file_name =  rat_names[rat_index]+'_' + rat_sessions[rat_names[rat_index]][session_index] + '_sessInfo.mat'
         session_information_directory = os.path.join(data_directory,novelty_session_directory, session_information_file_name)
+
 
         #### load session info, parameters, and lfp
         session_info = convert_session_mat_to_dict(session_information_directory)
@@ -41,7 +38,7 @@ for rat_index in range(0,4):
         #downsampled_lfp= downsample_signal(navigation_signal, lfp_sr, target_fs)
         #del navigation_signal
         # Accessing data for Rat A, Session 1, Probe 1, Shank 2
-        channels = channel_organization[rat_names[rat_index]][rat_sessions[rat_names[rat_index]][0]]
+        channels = channel_organization[rat_names[rat_index]][rat_sessions[rat_names[rat_index]][session_index]]
         #### process channels and signals and extract resting period
         shank_signals = group_lfp_by_shank(navigation_signal, channels)
         del navigation_signal
@@ -107,6 +104,8 @@ for rat_index in range(0,4):
             output_dict[probe]['theta'] = theta_power_shank[:,max_theta_index]
 
         import pickle as pkl
+        if not os.path.exists(output_directory):
+            os.makedirs(output_directory)
         # Define the filename where the dictionary will be stored
         output_filename = rat_names[rat_index]+'_' + rat_sessions[rat_names[rat_index]][session_index] + '_theta_output.pkl'
         # Open the file for writing in binary mode and dump the dictionary

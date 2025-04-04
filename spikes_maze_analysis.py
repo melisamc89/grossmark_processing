@@ -3,7 +3,6 @@ from src.plotting_utils import *
 from src.channel_information import *
 from src.config import *
 import pickle as pkl
-sessions = [[0,1],[0],[0,1,2],[0,1]]
 
 novelty_session_directory = os.path.join(data_directory, 'NoveltySessInfoMatFiles')
 theta_file_extension = '_theta_output.pkl'
@@ -56,6 +55,7 @@ for rat_index in range(0,4):
                 spike_matrix[indices,neuron] = 1
             output_dic['spikes_matrix'] = spike_matrix
             output_dic['LayerID'] = stimes[probe]['classification']
+            output_dic['TypeID'] = stimes[probe]['type']
             output_dic['position'] = position1D
             output_dic['theta'] = theta_signal
 

@@ -3,24 +3,14 @@ from src.plotting_utils import *
 from src.channel_information import *
 from src.config import*
 
-sessions = [[0,1],[0],[0,1,2],[0,1]]
-for rat_index in [3]:
+for rat_index in range(1,4):
     print('Extraction Spikes Clusters: ', rat_names[rat_index])
     for session_index in sessions[rat_index]:
         print('Session Number ... ', session_index + 1)
 
         rat_directory = os.path.join(data_directory, rat_names[rat_index])
         session_directory = rat_names[rat_index]+'_'+str(rat_sessions[rat_names[rat_index]][session_index])
-        novelty_session_directory = os.path.join(data_directory, 'NoveltySessInfoMatFiles')
-        #xml_file_name = rat_names[rat_index]+'_'+str(rat_sessions[rat_names[rat_index]][session_index]) + '.xml'
-        #xml_file_directory = os.path.join(rat_directory, session_directory,xml_file_name)
-        #session_information_file_name =  rat_names[rat_index]+'_' + rat_sessions[rat_names[rat_index]][session_index] + '_sessInfo.mat'
-        #session_information_directory = os.path.join(data_directory,novelty_session_directory, session_information_file_name)
-
-        #### load session info, parameters, and lfp
-        #session_info = convert_session_mat_to_dict(session_information_directory)
-        #params = get_recorging_parameters(xml_file_directory)
-        # Accessing data for Rat A, Session 1, Probe 1, Shank 2
+        #novelty_session_directory = os.path.join(data_directory, 'NoveltySessInfoMatFiles')
         channels = channel_organization[rat_names[rat_index]][rat_sessions[rat_names[rat_index]][session_index]]
 
         unmatched_counter = 0
@@ -57,16 +47,18 @@ for rat_index in [3]:
                     mean_waveform[index,:,:] = np.mean(waveform[x,:,:], axis=0)
                 waveform_dict[probe][shank]['waveform'] = mean_waveform
                 waveform_dict[probe][shank]['cluster_id'] = clusters_names
+                waveform_dict[probe][shank]['Spk.Group'] = spk_group
                 probe_neurons_counts = probe_neurons_counts + len(clusters_names)
             neurons_counter[probe] =  probe_neurons_counts
 
         import pickle as pkl
+        if not os.path.exists(output_directory):
+            os.makedirs(output_directory)
         # Define the filename where the dictionary will be stored
         output_filename = rat_names[rat_index]+'_' + rat_sessions[rat_names[rat_index]][session_index] + '_waveform_output.pkl'
         # Open the file for writing in binary mode and dump the dictionary
         with open(os.path.join(output_directory , output_filename), 'wb') as file:
             pkl.dump(waveform_dict, file)
-
         print('Total number of neurons in ' + probe + ' : ' + str (neurons_counter))
 
 #plot_single_spike_waveform(waveform_dict['Probe1']['LeftCA1Shank5']['waveform'], spike_index=0, color_map='viridis')

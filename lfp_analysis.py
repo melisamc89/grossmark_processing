@@ -3,10 +3,9 @@ from src.plotting_utils import *
 from src.channel_information import *
 from src.config import*
 
-### will later create a loop on this
-rat_index = 0
-sessions = [[0,1],[0],[0,1,2],[0,1]]
 for rat_index in range(0,4):
+    low_freq = low_ripple_freq[rat_index]
+    high_freq = high_ripple_freq[rat_index]
     print('Extraction Ripple Bands from rat: ', rat_names[rat_index])
     for session_index in sessions[rat_index]:
         print('Session Number ... ', session_index + 1)
@@ -45,7 +44,7 @@ for rat_index in range(0,4):
         del NREM_signal
 
         # Accessing data for Rat A, Session 1, Probe 1, Shank 2
-        channels = channel_organization[rat_names[rat_index]][rat_sessions[rat_names[rat_index]][0]]
+        channels = channel_organization[rat_names[rat_index]][rat_sessions[rat_names[rat_index]][session_index]]
         #### process channels and signals and extract resting period
         shank_signals = group_lfp_by_shank(downsampled_lfp, channels)
         del downsampled_lfp
@@ -109,6 +108,8 @@ for rat_index in range(0,4):
             #output_dict[probe]['theta'] = theta_power_shank[:,max_theta_index]
 
         import pickle as pkl
+        if not os.path.exists(output_directory):
+            os.makedirs(output_directory)
         # Define the filename where the dictionary will be stored
         output_filename = rat_names[rat_index]+'_' + rat_sessions[rat_names[rat_index]][session_index] + '_ripple_power_output.pkl'
         # Open the file for writing in binary mode and dump the dictionary

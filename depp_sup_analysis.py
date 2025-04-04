@@ -32,9 +32,8 @@ def spikes_to_rates(spikes, kernel_width=10):
     return rates.T
 
 neural_data_dir = files_directory
-sessions = [[0,1],[0],[0,1,2],[0,1]]
 
-for rat_index in range(4):
+for rat_index in range(0,4):
     print('Extracting spikes times from rat: ', rat_names[rat_index])
     for session_index in sessions[rat_index]:
         print('Session Number ... ', session_index + 1)
@@ -51,22 +50,50 @@ for rat_index in range(4):
             data = spikes_to_rates(spikes_matrix.T, kernel_width=k)
 
             layerID = stimes['LayerID']
+            typeID = stimes['TypeID']
             # Find indices where the value is 'DEEP'
-            deep_index = np.array([index for index, value in enumerate(layerID ) if value == 'DEEP'])
+            deep_index = np.array([index for index, (value, ntype) in enumerate(zip(layerID, typeID)) if
+                                   value == 'DEEP' and ntype == 'PYR'])
             # Find indices where the value is 'SUPERFICIAL'
-            superficial_index = np.array([index for index, value in enumerate(layerID ) if value == 'SUPERFICIAL'])
+            superficial_index = np.array([index for index, (value, ntype)  in enumerate(zip(layerID, typeID)) if
+                                          value == 'SUPERFICIAL' and ntype == 'PYR'])
 
             deep_spikes = data[:,deep_index]
             sup_spikes =  data[:,superficial_index]
 
+            pyr_index = np.array([index for index, ntype in enumerate(typeID) if
+                                   ntype == 'PYR'])
+            # Find indices where the value is 'SUPERFICIAL'
+            data=data[:,pyr_index]
+            #deep_index_int = np.array([index for index, (value, ntype) in enumerate(zip(layerID, typeID)) if
+             #                      value == 'DEEP' and ntype == 'INT'])
+            # Find indices where the value is 'SUPERFICIAL'
+            #superficial_index_int = np.array([index for index, (value, ntype)  in enumerate(zip(layerID, typeID)) if
+            #                              value == 'SUPERFICIAL' and ntype == 'INT'])
+
+            #deep_spikes_int = data[:,deep_index_int]
+            #sup_spikes_int =  data[:,superficial_index_int]
+
+
             position = stimes['position']
             labels = position
-
             direction = get_directions(position)
             speed = abs(get_speed(position))
             trial_id = get_trial_id(position)
             internal_time = compute_internal_trial_time(trial_id, 40)
             time = np.arange(0, len(position))
+
+            valid_index = np.where(direction!=0)[0]
+            labels = labels[valid_index]
+            direction = direction[valid_index]
+            speed = speed[valid_index]
+            trial_id = trial_id[valid_index]
+            internal_time = internal_time[valid_index]
+            time = time[valid_index]
+
+            data = data[valid_index,:]
+            deep_spikes = deep_spikes[valid_index,:]
+            sup_spikes = sup_spikes[valid_index,:]
 
             umap_model = umap.UMAP(n_neighbors=120, n_components=3, min_dist=0.1, random_state=42)
 
@@ -141,10 +168,7 @@ from src.plotting_utils import *
 from src.channel_information import *
 from src.config import *
 
-####start working on individual rats
-### will later create a loop on this
-rat_index = 0
-sessions = [[0,1],[0],[0,1,2],[0,1]]
+
 for rat_index in range(0,4):
     #print('Extraction Ripple Bands from rat: ', rat_names[rat_index])
     for session_index in sessions[rat_index]:

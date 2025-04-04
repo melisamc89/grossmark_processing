@@ -3,6 +3,7 @@ from unittest import signals
 import matplotlib.pyplot as plt
 import numpy as np
 
+
 def plot_probe_signals(shank_signals):
     # Determine the number of shanks per probe to set up the subplots
     num_shanks_probe1 = len(shank_signals['Probe1'])
@@ -132,7 +133,7 @@ def plot_single_spike_waveform(waveforms, spike_index=0, color_map='viridis'):
     plt.show()
 
 
-def plot_waveform_and_power(waveforms, power_spectrum, limit_channel,max_peak, text, color_map='viridis'):
+def plot_waveform_and_power(waveforms, power_spectrum, limit_channel,max_peak, text, low_freq,high_freq,neuron_type,color_map='viridis'):
     num_channels = waveforms.shape[1]
     samples_per_spike = waveforms.shape[0]
     n_freqs = power_spectrum['power'].shape[0]
@@ -175,7 +176,7 @@ def plot_waveform_and_power(waveforms, power_spectrum, limit_channel,max_peak, t
                      color=colors[channel], linestyle='--', alpha=0.5)
 
         # Highlight the area under the curve between 100 Hz and 250 Hz
-        idx = (frequencies >= 100) & (frequencies <= 200)
+        idx = (frequencies >= low_freq) & (frequencies <= high_freq)
         ax2.fill_between(frequencies[idx], offset_increment * channel, offset_power[idx], color=color, alpha=0.3)
 
         # Calculate and display the area under the curve
@@ -184,7 +185,7 @@ def plot_waveform_and_power(waveforms, power_spectrum, limit_channel,max_peak, t
                  horizontalalignment='right')
 
     # Setting labels and titles
-    ax1.set_title('Mean Spike Waveforms CLASSFICATION:' + text, fontsize=20)
+    ax1.set_title('CLASSFICATION:' + text + ' TYPE: ' + neuron_type, fontsize=20)
     ax1.set_xlabel('Sample Index')
     ax1.set_ylabel('Amplitude + Offset')
     ax1.legend(loc='upper right')
