@@ -122,3 +122,41 @@ for rat_index in range(0,4):
         del shank_signals
 
 
+
+####### NREM DURATION ################
+
+from src.general_utils import *
+from src.plotting_utils import *
+from src.channel_information import *
+from src.config import*
+
+for rat_index in range(0,4):
+    low_freq = low_ripple_freq[rat_index]
+    high_freq = high_ripple_freq[rat_index]
+    print('Extraction Ripple Bands from rat: ', rat_names[rat_index])
+    for session_index in sessions[rat_index]:
+        print('Session Number ... ', session_index + 1)
+        rat_directory = os.path.join(data_directory, rat_names[rat_index])
+        session_directory = rat_names[rat_index]+'_'+str(rat_sessions[rat_names[rat_index]][session_index])
+        novelty_session_directory = os.path.join(data_directory, 'NoveltySessInfoMatFiles')
+        eef_file_name = rat_names[rat_index]+'_'+str(rat_sessions[rat_names[rat_index]][session_index]) + '.eeg'
+        xml_file_name = rat_names[rat_index]+'_'+str(rat_sessions[rat_names[rat_index]][session_index]) + '.xml'
+        eeg_file_directory = os.path.join(rat_directory, session_directory,eef_file_name)
+        xml_file_directory = os.path.join(rat_directory, session_directory,xml_file_name)
+        session_information_file_name =  rat_names[rat_index]+'_' + rat_sessions[rat_names[rat_index]][session_index] + '_sessInfo.mat'
+        session_information_directory = os.path.join(data_directory,novelty_session_directory, session_information_file_name)
+
+        #### load session info, parameters, and lfp
+        session_info = convert_session_mat_to_dict(session_information_directory)
+        params = get_recorging_parameters(xml_file_directory)
+
+        #### start loading
+        lfp_sr = params['lfpSamplingRate']
+        ### get NREM period
+        NREM_durections = session_info['epochs']['NREMEpoch'][1,:] - session_info['epochs']['NREMEpoch'][0,:]
+        NREM_max_duration = np.max(NREM_durections)
+        NREM_max_duration_index = np.argmax(NREM_durections)
+
+        start_resting = int(session_info['epochs']['NREMEpoch'][0,NREM_max_duration_index]  )
+        end_resting = int(session_info['epochs']['NREMEpoch'][1,NREM_max_duration_index])
+        print('RAT ' + rat_names[rat_index] + str((end_resting - start_resting)/60))

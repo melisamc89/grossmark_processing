@@ -3,7 +3,7 @@ from src.plotting_utils import *
 from src.channel_information import *
 from src.config import*
 
-for rat_index in range(1,4):
+for rat_index in range(0,4):
     print('Extraction Spikes Clusters: ', rat_names[rat_index])
     for session_index in sessions[rat_index]:
         print('Session Number ... ', session_index + 1)

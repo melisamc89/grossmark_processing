@@ -16,8 +16,10 @@ rat_sessions['Cicero'] = ['09012014','09102014','09172014']
 rat_sessions['Gatsby'] = ['08022013','08282013']
 
 ### will later create a loop on this
-#sessions = [[0,1],[0],[0,1,2],[0,1]]
-sessions = [[0],[0],[0],[0]]
+sessions = [[0,1],[0],[0,1,2],[0,1]]
+#sessions = [[0],[0],[0],[0]]
+#sessions = [[1],[0],[1,2],[1]]
+
 low_ripple_freq = [100,100,100,100]
 high_ripple_freq = [250,250,250,250]
 

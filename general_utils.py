@@ -328,7 +328,8 @@ def get_directions(signal, low_threshold=0.1, high_threshold=1.5):
     return directions
 
 
-def get_speed(signal, filter_size=10):
+
+def get_speed(signal, time_stamps, filter_size=10):
     """
     Computes the derivative of the signal (speed) and applies a Gaussian filter.
 
@@ -340,8 +341,9 @@ def get_speed(signal, filter_size=10):
     - filtered_speed: np.array, the speed of the signal, smoothed, and same length as input signal.
     """
     # Calculate the speed as the difference between consecutive elements
-    speed = np.diff(signal)
-
+    speed_pos = np.diff(signal)
+    timediff = np.diff(time_stamps)
+    speed = speed_pos / timediff
     # To make speed the same length as signal, append the last computed difference to the end
     speed = np.append(speed, speed[-1])
 
