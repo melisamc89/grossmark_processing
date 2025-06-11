@@ -156,7 +156,7 @@ final_dict = {
 }
 
 output_pd = pd.DataFrame(final_dict)
-output_pd.to_csv(os.path.join(output_directory,'total_neurons.csv'))
+output_pd.to_csv(os.path.join(output_directory,'total_neurons_new_criteria.csv'))
 
 
 # Set up the matplotlib figure
@@ -170,4 +170,4 @@ table.auto_set_font_size(False)
 table.set_fontsize(10)
 table.scale(1.2, 1.2)  # May need adjustment to fit your screen
 plt.show()
-fig.savefig(figures_directory + 'total_neuron.png')
+fig.savefig(figures_directory + 'total_neuron_new_criteria.png')

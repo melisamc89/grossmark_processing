@@ -35,7 +35,7 @@ for rat_index in range(0,4):
 
         start_maze = start_resting
         end_maze = end_resting
-        start_maze = session_info['epochs']['postEpoch'][0][0]
+        start_maze = session_info['epochs']['preEpoch'][0][0]
         end_maze = session_info['epochs']['postEpoch'][1][0]
 
         positionTimeStamps = np.arange(start_maze, end_maze, 1 / 40)
