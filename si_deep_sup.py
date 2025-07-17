@@ -222,10 +222,11 @@ df_long = df.melt(id_vars=['rat', 'session', 'probe', 'filter', 'behavioral_labe
                   value_vars=['si', 'si_deep', 'si_sup'],
                   var_name='Area', value_name='SI')
 # Map custom colors and area names
+
 area_palette = {
-    'si': 'black',
-    'si_deep': 'gold',
-    'si_sup': 'purple'
+    'si': '#bbbcc0ff',
+    'si_deep': '#cc9900',
+    'si_sup': '#9900ff',
 }
 
 area_labels = {

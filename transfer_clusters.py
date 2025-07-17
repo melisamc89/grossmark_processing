@@ -344,10 +344,10 @@ ax.scatter(df_unassigned[ f'{reducer_name}1'], df_unassigned[ f'{reducer_name}2'
 # Colored overlay for clustered cells
 
 custom_cluster_palette  = {
-    -10: 'gray',
-     0: "#6f944d",        # green-ish
-     1:  "#3a5f8a",        #  blue-ish
-     2: "#8b1e3f",       # red-ish
+    -10: '#bbbcc0ff',
+     0: '#bce784ff',        # green-ish
+     1:  '#66cef4ff',        #  blue-ish
+     2:  '#ec8ef8ff',       # red-ish
 }
 
 sns.scatterplot(data=df_assigned, x=rf'{reducer_name}1', y=f'{reducer_name}2', hue='transferred_cluster',
@@ -397,7 +397,8 @@ mouse_totals = mi_pd_lt.groupby(['area', 'mouse']).size().reset_index(name='tota
 mouse_counts = pd.merge(mouse_counts, mouse_totals, on=['area', 'mouse'])
 mouse_counts['normalized'] = mouse_counts['count'] / mouse_counts['total_neurons']
 # Plotting
-palette = {'SUPERFICIAL': 'purple', 'DEEP': 'gold'}
+palette = {'SUPERFICIAL': '#9900ff', 'DEEP': '#cc9900'}
+
 plt.figure(figsize=(10, 6))
 # Barplot
 ax = sns.barplot(data=mouse_counts, x=clusters_name, y='normalized',

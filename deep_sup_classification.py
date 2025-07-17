@@ -150,7 +150,7 @@ for rat_index in [0,1,2,3]:
                     savedir = figures_directory+'/'+rat_names[rat_index] + '_' + rat_sessions[rat_names[rat_index]][rat_session]
                     if not os.path.exists(savedir):
                         os.makedirs(savedir)
-                    file_name = rat_names[rat_index] + '_' + rat_sessions[rat_names[rat_index]][rat_session] +'_' + probe + '_' + shank + '_' + str(waveform[probe][shank]['cluster_id'][neuron]) + '.jpg'
+                    file_name = rat_names[rat_index] + '_' + rat_sessions[rat_names[rat_index]][rat_session] +'_' + probe + '_' + shank + '_' + str(waveform[probe][shank]['cluster_id'][neuron]) + '.svg'
                     file_directory = os.path.join(savedir, file_name)
                     fig.savefig(file_directory)
                     plt.close(fig)

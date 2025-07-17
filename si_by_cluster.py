@@ -202,21 +202,24 @@ from scipy.stats import mannwhitneyu
 import matplotlib.pyplot as plt
 import seaborn as sns
 import itertools
+palette = {'SUPERFICIAL': '#9900ff', 'DEEP': '#cc9900'}
+
+
+cluster_palette = {
+    '10': '#bbbcc0ff',
+     '0': '#bce784ff',        # green-ish
+     '1':  '#66cef4ff',        #  blue-ish
+     '2':  '#ec8ef8ff',       # red-ish
+}
 
 label_colors = {
-    '2': "#8b1e3f",       # Deep wine red
-    '1': "#3a5f8a",        # Muted blue
-    '0': "#6f944d",        # Muted green
-    '10': '#d3d3d3'        # Light gray
+    10: '#bbbcc0ff',
+    0: '#bce784ff',        # green-ish
+     1:  '#66cef4ff',        #  blue-ish
+     2:  '#ec8ef8ff',       # red-ish
 }
 
-# Define cluster colors
-cluster_palette = {
-    '-1': 'black',
-     '0': "#6f944d",        # Muted green
-     '1':  "#3a5f8a",        # Muted blue
-     '2': "#8b1e3f",       # Deep wine red
-}
+
 # Cluster pairs to compare (including -1)
 cluster_ids = [-1, 0, 1, 2]
 cluster_pairs = list(itertools.combinations(cluster_ids, 2))
@@ -301,7 +304,7 @@ plt.show()
 
 # Define cluster colors
 cluster_palette_numbers = {
-    -1: 'black',
+    -1: '#bbbcc0ff',
     0: "#6f944d",  # Muted green
     1: "#3a5f8a",  # Muted blue
     2: "#8b1e3f",  # Deep wine red
@@ -342,3 +345,4 @@ fig_path_base = os.path.join(output_dir, 'SI_pos_vs_time_cluster')
 plt.savefig(f"{fig_path_base}.png", dpi=300, bbox_inches='tight')
 plt.savefig(f"{fig_path_base}.svg", bbox_inches='tight')
 plt.show()
+

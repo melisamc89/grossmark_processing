@@ -33,11 +33,11 @@ def spikes_to_rates(spikes, kernel_width=10):
 
 neural_data_dir = files_directory
 
-rat_index = [2,3]
-sessions = [[1],[0],[2],[1]]
+rat_index = [0,1,2,3]
+sessions = [[0],[0],[2],[1]]
 speed_lim = 0.05
 
-for rat_index in [2,3]:
+for rat_index in [0]:
     print('Extracting spikes times from rat: ', rat_names[rat_index])
     for session_index in sessions[rat_index]:
         print('Session Number ... ', session_index + 1)
@@ -135,45 +135,46 @@ for rat_index in [2,3]:
                           'SUPERFICIAL: ' + str(sup_spikes.shape[1]),]
 
             row = 3
-            col = 5
-            fig = plt.figure(figsize=(15, 16))
+            col = 2
+            fig = plt.figure(figsize=(8, 12))
             for index ,umap_emb in enumerate(umap_emb_):
                 #if index != 1 and index!=3 and index!=5:
-                ax = fig.add_subplot(row, col, 1 + 5*index, projection='3d')
+                ax = fig.add_subplot(row, col, 1 + 2*index, projection='3d')
                 # ax = fig.add_subplot(row, col, index + 1)
                 ax.set_title('Position ' + umap_title[index])
                 ax.scatter(umap_emb[:, 0], umap_emb[:, 1], umap_emb[:, 2], c=position, s=1, alpha=0.5, cmap='magma')
                 # ax.scatter(umap_emb[:,0],umap_emb[:,1], c = labels[:-1], s= 1, alpha = 0.5, cmap = 'magma')
                 ax.grid(False)
 
-                ax = fig.add_subplot(row, col, 2 + 5*index, projection='3d')
+                #ax = fig.add_subplot(row, col, 2 + 5*index, projection='3d')
                 # ax = fig.add_subplot(row, col, index + 1)
-                ax.set_title('Direction ' + umap_title[index])
-                ax.scatter(umap_emb[:, 0], umap_emb[:, 1], umap_emb[:, 2], c=direction, s=1, alpha=0.5, cmap='Blues')
+                #ax.set_title('Direction ' + umap_title[index])
+                #ax.scatter(umap_emb[:, 0], umap_emb[:, 1], umap_emb[:, 2], c=direction, s=1, alpha=0.5, cmap='Blues')
                 # ax.scatter(umap_emb[:,0],umap_emb[:,1], c = labels[:-1], s= 1, alpha = 0.5, cmap = 'magma')
-                ax.grid(False)
+                #ax.grid(False)
 
-                ax = fig.add_subplot(row, col, 3 + 5 * index, projection='3d')
+                #ax = fig.add_subplot(row, col, 3 + 5 * index, projection='3d')
                 # ax = fig.add_subplot(row, col, index + len(kernels) + 1 )
-                ax.set_title('Speed ' + umap_title[index])
-                ax.scatter(umap_emb[:, 0], umap_emb[:, 1], umap_emb[:, 2], c=speed, s=1, alpha=0.5, cmap='Reds')
+                #ax.set_title('Speed ' + umap_title[index])
+                #ax.scatter(umap_emb[:, 0], umap_emb[:, 1], umap_emb[:, 2], c=speed, s=1, alpha=0.5, cmap='Reds')
                 # ax.scatter(umap_emb[:,0],umap_emb[:,1], c = speed, s= 1, alpha = 0.5, cmap = 'Reds')
-                ax.grid(False)
+                #ax.grid(False)
 
-                ax = fig.add_subplot(row, col, 4 + 5*index, projection='3d')
+                ax = fig.add_subplot(row, col, 2 + 2*index, projection='3d')
                 # ax = fig.add_subplot(row, col,index + len(kernels)*2 + 1)
                 ax.set_title('Time' + umap_title[index])
                 ax.scatter(umap_emb[:, 0], umap_emb[:, 1], umap_emb[:, 2], c=np.arange(0, umap_emb.shape[0]), s=1,
-                               alpha=0.5, cmap='Greens')
+                               alpha=0.5, cmap='YlGn_r')
                 # ax.scatter(umap_emb[:,0],umap_emb[:,1], c = np.arange(0,umap_emb.shape[0]), s = 1, alpha = 0.5, cmap = 'Greens')
                 ax.grid(False)
 
-                ax = fig.add_subplot(row, col, 5 + 5*index, projection='3d')
+                #ax = fig.add_subplot(row, col, 5 + 5*index, projection='3d')
                 # ax = fig.add_subplot(row, col,index + len(kernels) * 3 +1 )
-                ax.set_title('Trial ID '+ umap_title[index])
-                ax.scatter(umap_emb[:, 0], umap_emb[:, 1], umap_emb[:, 2], c=trial_id, s=1, alpha=0.5, cmap='viridis')
+                #ax.set_title('Trial ID '+ umap_title[index])
+                #ax.scatter(umap_emb[:, 0], umap_emb[:, 1], umap_emb[:, 2], c=trial_id, s=1, alpha=0.5, cmap='viridis')
                 # ax.scatter(umap_emb[:,0],umap_emb[:,1], c = trial_id[:-1], s = 1, alpha = 0.5, cmap = 'viridis')
-                ax.grid(False)
+                #ax.grid(False)
+
                 fig.tight_layout()
 
             # Define the filename where the dictionary will be stored

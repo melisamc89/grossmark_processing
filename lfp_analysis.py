@@ -275,7 +275,7 @@ low_freq = 100
 high_freq = 250
 
 # === Create output folder ===
-ripple_dir = os.path.join(figures_directory, 'ripple_examples_2')
+ripple_dir = os.path.join(figures_directory, 'ripple_examples')
 os.makedirs(ripple_dir, exist_ok=True)
 
 # === Loop through probes and shanks ===
@@ -398,6 +398,8 @@ for probe in shank_signals:
             folder = os.path.join(ripple_dir, f"{probe}_shank{shank}")
             os.makedirs(folder, exist_ok=True)
             fname = os.path.join(folder, f"example_{examples_saved:03d}.png")
+            fname = os.path.join(folder, f"example_{examples_saved:03d}.svg")
+
             plt.savefig(fname, dpi=300)
             plt.close()
 

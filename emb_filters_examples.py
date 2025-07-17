@@ -60,7 +60,7 @@ for beh in ['dir']:
 
 neural_data_dir = files_directory
 
-rats = [0,1]
+rats = [0]
 sessions = [[0],[0]]
 speed_lim = 0.05 #(m/s)
 for rat_index in rats:
@@ -100,6 +100,8 @@ for rat_index in rats:
 
             spikes_matrix = stimes['spikes_matrix']
             spikes_matrix = spikes_matrix[valid_mov,:]
+            #data = spikes_to_rates(spikes_matrix[:, pyr_index].T, kernel_width=filter_size)
+
             layerID = stimes['LayerID']
             typeID = stimes['TypeID']
             # Find indices where the value is 'DEEP'
@@ -123,7 +125,8 @@ for rat_index in rats:
                 col = 6
                 fig = plt.figure(figsize=(15, 9))
                 for index, filter_size in enumerate(kernels):
-                    data = spikes_to_rates(spikes_.T, kernel_width=filter_size)
+
+                    data = spikes_to_rates(spikes_matrix[:,pyr_index].T, kernel_width=filter_size)
                     umap_model.fit(data)
                     umap_emb = umap_model.transform(data)
 
@@ -157,6 +160,6 @@ for rat_index in rats:
 
                 figure_name = rat_names[rat_index] + '_' + str(
                     rat_sessions[rat_names[rat_index]][session_index]) + '_' + probe + 'umap_' + figure_data[
-                                                                                                 fig_idx] + '_filters.png'
+                                                                                                 fig_idx] + '_filters_pyr.png'
                 fig.savefig(os.path.join(figures_directory, 'filters_examples', figure_name))
 

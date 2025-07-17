@@ -360,14 +360,18 @@ df_long = df_filtered.melt(
     var_name='Area', value_name='SI_value'
 )
 # Keep only 'position' and 'time' behavioral labels
-df_long = df_long[df_long['behavioral_label'].isin(['time'])]
+df_long = df_long[df_long['behavioral_label'].isin(['time','pos'])]
 # Define palette and display names
-palette = {'si': 'black', 'si_deep': 'gold', 'si_sup': 'purple'}
+palette = {
+    'si': '#bbbcc0ff',
+    'si_deep': '#cc9900',
+    'si_sup': '#9900ff',
+}
 area_order = ['si', 'si_deep', 'si_sup']
 friendly_labels = {'si': 'Overall', 'si_deep': 'Deep', 'si_sup': 'Superficial'}
 # Create subplots
 fig, axes = plt.subplots(1, 2, figsize=(10, 5), sharey=True)
-for i, beh in enumerate(['time']):
+for i, beh in enumerate(['time','pos']):
     ax = axes[i]
     subset = df_long[df_long['behavioral_label'] == beh]
     sns.barplot(data=subset, x='Area', y='SI_value', palette=palette, order=area_order, ci='sd', ax=ax)
@@ -380,7 +384,8 @@ for i, beh in enumerate(['time']):
     for j, (a, b) in enumerate(comparisons):
         data1 = subset[subset['Area'] == a]['SI_value']
         data2 = subset[subset['Area'] == b]['SI_value']
-        stat, p = mannwhitneyu(data1, data2)
+        from scipy.stats import ttest_ind
+        stat, p = ttest_ind(data1, data2, equal_var=False)  # Welch’s t-test
         if p < 0.001:
             sig = '***'
         elif p < 0.01:
@@ -402,4 +407,85 @@ for i, beh in enumerate(['time']):
     ax.set_xlabel('')
     ax.grid(False)
 plt.tight_layout()
+fig.savefig(os.path.join(figures_directory, 'Si_rats_bar_20s.png'))
+fig.savefig(os.path.join(figures_directory, 'Si_rats_bar_20s.svg'))
+
+
+plt.show()
+
+
+import seaborn as sns
+import matplotlib.pyplot as plt
+from scipy.stats import ttest_ind
+
+plt.figure(figsize=(8, 6))
+ax = plt.gca()
+
+# Plot barplot with 'behavioral_label' as x-axis and 'Area' as hue
+sns.barplot(
+    data=df_long,
+    x='behavioral_label',
+    y='SI_value',
+    hue='Area',
+    palette=palette,
+    hue_order=area_order,
+    ci='sd',
+    ax=ax
+)
+
+# Overlay stripplot
+sns.stripplot(
+    data=df_long,
+    x='behavioral_label',
+    y='SI_value',
+    hue='Area',
+    dodge=True,
+    hue_order=area_order,
+    color='black',
+    size=6,
+    alpha=0.6,
+    ax=ax
+)
+
+# Adjust legend to avoid duplication
+handles, labels = ax.get_legend_handles_labels()
+ax.legend(handles[:3], [friendly_labels[a] for a in area_order], title='Area')
+
+# Statistical annotations
+height_step = 0.02
+for i, beh in enumerate(['pos', 'time']):
+    subset = df_long[df_long['behavioral_label'] == beh]
+    y_max = subset['SI_value'].max()
+    base_height = y_max + 0.02
+    for j, (a, b) in enumerate([('si', 'si_deep'), ('si', 'si_sup'), ('si_deep', 'si_sup')]):
+        data1 = subset[subset['Area'] == a]['SI_value']
+        data2 = subset[subset['Area'] == b]['SI_value']
+        stat, p = ttest_ind(data1, data2, equal_var=False)
+        if p < 0.001:
+            sig = '***'
+        elif p < 0.01:
+            sig = '**'
+        elif p < 0.05:
+            sig = '*'
+        else:
+            sig = None
+        if sig:
+            x1 = i - 0.25 + area_order.index(a) * 0.25 / 1.5
+            x2 = i - 0.25 + area_order.index(b) * 0.25 / 1.5
+            y = base_height + j * height_step
+            ax.plot([x1, x1, x2, x2], [y, y + 0.005, y + 0.005, y], lw=1.5, c='k')
+            ax.text((x1 + x2) / 2, y + 0.007, sig, ha='center', va='bottom', color='k', fontsize=12)
+
+# Final touches
+ax.set_xlabel('')
+ax.set_ylabel('Structure Index (SI)')
+ax.set_title('SI at 0.2s for Time and Position')
+ax.set_ylim(0, 1)
+ax.set_xticklabels(['Time', 'Position'])
+ax.grid(False)
+
+plt.tight_layout()
+fig = ax.get_figure()
+fig.savefig(os.path.join(figures_directory, 'Si_rats_bar_20s_combined.png'))
+fig.savefig(os.path.join(figures_directory, 'Si_rats_bar_20s_combined.svg'))
 plt.show()
