@@ -302,13 +302,13 @@ plt.show()
 
 
 
-# Define cluster colors
 cluster_palette_numbers = {
     -1: '#bbbcc0ff',
-    0: "#6f944d",  # Muted green
-    1: "#3a5f8a",  # Muted blue
-    2: "#8b1e3f",  # Deep wine red
+    0: '#bce784ff',        # green-ish
+     1:  '#66cef4ff',        #  blue-ish
+     2:  '#ec8ef8ff',       # red-ish
 }
+
 
 # Ensure cluster_ID is integer
 si_df['cluster_ID'] = si_df['cluster_ID'].astype(int)

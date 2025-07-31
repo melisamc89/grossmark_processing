@@ -7,9 +7,13 @@ import pickle as pkl
 novelty_session_directory = os.path.join(data_directory, 'NoveltySessInfoMatFiles')
 theta_file_extension = '_theta_output.pkl'
 
-for rat_index in range(0,4):
+#for rat_index in range(0,4):
+for rat_index in [0]:
+
     print('Extracting spikes times from rat: ', rat_names[rat_index])
-    for session_index in sessions[rat_index]:
+    #for session_index in sessions[rat_index]:
+    for session_index in [0]:
+
         print('Session Number ... ', session_index + 1)
 
         spktimes_file_name = rat_names[rat_index]+'_' + rat_sessions[rat_names[rat_index]][session_index] + '_stimes_classified.pkl'
@@ -55,12 +59,10 @@ for rat_index in range(0,4):
             output_dic['LayerID'] = stimes[probe]['classification']
             output_dic['TypeID'] = stimes[probe]['type']
 
-
-
             data_output_directory = '/home/melma31/Documents/time_project/data'
             # Define the filename where the dictionary will be stored
             output_filename = rat_names[rat_index] + '_' + rat_sessions[rat_names[rat_index]][
-                session_index] + probe + 'POST_neural_data.pkl'
+                session_index] + probe + 'ALL_neural_data.pkl'
             # Open the file for writing in binary mode and dump the dictionary
             with open(os.path.join(files_directory, output_filename), 'wb') as file:
                 pkl.dump(output_dic, file)

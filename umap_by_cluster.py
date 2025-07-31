@@ -114,7 +114,7 @@ for fname, mouse in zip(files_names, mouse_names):
         clusters_names = np.unique(clusterID)
 
         # Apply Gaussian filter to full signal
-        filtered_signal = gaussian_filter1d(signal, sigma=6, axis=0)
+        filtered_signal = gaussian_filter1d(signal, sigma=10, axis=0)
 
         # Compute UMAP for full signal in 3D
         umap_model = umap.UMAP(n_neighbors=120, n_components=3, random_state=42)
@@ -157,7 +157,7 @@ for fname, mouse in zip(files_names, mouse_names):
                 continue
 
             # Apply Gaussian filter to cluster signal
-            filtered_cluster_signal = gaussian_filter1d(cluster_signal, sigma=6, axis=0)
+            filtered_cluster_signal = gaussian_filter1d(cluster_signal, sigma=10, axis=0)
 
             # Compute UMAP for cluster signal in 3D
             umap_model = umap.UMAP(n_neighbors=120, n_components=3, random_state=42)
@@ -183,7 +183,7 @@ for fname, mouse in zip(files_names, mouse_names):
         fig.subplots_adjust(top=0.88)
 
         probe_clean = str(probe).replace(" ", "_")
-        save_name = f"{mouse}_{probe_clean}_umap_3D_clusters.png"
+        save_name = f"{mouse}_{probe_clean}_umap_3D_clusters_16.png"
         save_path = os.path.join(figures_directory, save_name)
         plt.savefig(save_path, dpi=300)
         plt.close(fig)

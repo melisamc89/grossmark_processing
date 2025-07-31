@@ -40,7 +40,6 @@ params1 = {
     'verbose': False
 }
 
-
 params2 = {
     'n_bins': 3,
     'discrete_label': True,
