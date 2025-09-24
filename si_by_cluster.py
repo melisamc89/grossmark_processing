@@ -65,14 +65,28 @@ from src.config import *
 cluster_directory = os.path.join(base_directory, 'clusters')
 
 files_names = ['Achilles_mi_transferred_cluster_3_dict.pkl',
-               'Calb_mi_transferred_cluster_3_dict.pkl',
-               'Thy_mi_transferred_cluster_3_dict.pkl']
-mouse_names = ['Achilles', 'Calb', 'Thy']
+        'Calb01_11_03_16_02_25_mi_transferred_cluster_3_dict.pkl',
+         'Calb01uLED_10_17_09_05_56_mi_transferred_cluster_3_dict.pkl',
+        'Calb01uLED_10_18_11_23_15_mi_transferred_cluster_3_dict.pkl',
+         'Calb01uLED_10_19_11_25_09_mi_transferred_cluster_3_dict.pkl',
+         'Calb01uLED_10_21_12_48_35_mi_transferred_cluster_3_dict.pkl',
+         'Thy01uLED_10_19_09_07_25_mi_transferred_cluster_3_dict.pkl',
+         'Thy01uLED_10_10_09_10_26_mi_transferred_cluster_3_dict.pkl']
+#files_names = ['Thy01uLED_10_10_09_10_26_mi_transferred_cluster_3_dict.pkl']
+mouse_names = ['Achilles',
+        'Calb01_11_03_16_02_25',
+         'Calb01uLED_10_17_09_05_56',
+        'Calb01uLED_10_18_11_23_15',
+         'Calb01uLED_10_19_11_25_09',
+         'Calb01uLED_10_21_12_48_35',
+         'Thy01uLED_10_19_09_07_25',
+         'Thy01uLED_10_10_09_10_26']
+#mouse_names = ['Thy01uLED_10_10_09_10_26']
 
+#files_names = ['Calb_mi_transferred_cluster_3_dict.pkl',
+#               'Thy_mi_transferred_cluster_3_dict.pkl']
 
-files_names = ['Calb_mi_transferred_cluster_3_dict.pkl',
-               'Thy_mi_transferred_cluster_3_dict.pkl']
-mouse_names = ['Calb', 'Thy']
+#mouse_names = ['Calb', 'Thy']
 
 
 behavior_keys = ['pos', 'posdir', 'dir', 'speed', 'time', 'inner_trial_time', 'trial_id']
@@ -83,7 +97,13 @@ raw_mi_values = {key: [] for key in behavior_keys}
 z_mi_values = {f'z_{key}': [] for key in behavior_keys}
 import pickle
 # Load data
-speed_limit = {'Achilles': 0.05, 'Calb': 6, 'Thy': 6}
+speed_limit = {'Achilles': 0.05, 'Calb01_11_03_16_02_25': 6, 'Calb01uLED_10_17_09_05_56': 6,
+               'Calb01uLED_10_18_11_23_15': 4 , 'Calb01uLED_10_19_11_25_09': 10,
+               'Calb01uLED_10_21_12_48_35':5, 'Thy01uLED_10_19_09_07_25': 2,
+               'Thy01uLED_10_10_09_10_26':2}
+
+#speed_limit =  {'Thy01uLED_10_10_09_10_26':2}
+
 for fname, mouse in zip(files_names, mouse_names):
     filepath = os.path.join(cluster_directory, fname)
     with open(filepath, 'rb') as f:
@@ -167,7 +187,7 @@ import pandas as pd
 data_output_directory = '/home/melma31/Documents/time_project/SI_clusters'
 all_data = []
 # List your mice (you can also use glob if needed)
-mice = ['Achilles','Calb', 'Thy']
+mice = mouse_names
 for mouse in mice:
     filename = os.path.join(data_output_directory, f'{mouse}_si_clusters_100nei.pkl')
     with open(filename, 'rb') as f:
@@ -218,6 +238,22 @@ label_colors = {
      1:  '#66cef4ff',        #  blue-ish
      2:  '#ec8ef8ff',       # red-ish
 }
+####new colores
+
+cluster_palette = {
+    '10': '#bbbcc0ff',
+     '1': '#bce784ff',        # green-ish
+     '2':  '#66cef4ff',        #  blue-ish
+     '0':  '#ec8ef8ff',       # red-ish
+}
+
+label_colors   = {
+    -10: '#bbbcc0ff',
+     1: '#bce784ff',        # green-ish
+     2:  '#66cef4ff',        #  blue-ish
+     0:  '#ec8ef8ff',       # red-ish
+}
+
 
 
 # Cluster pairs to compare (including -1)
@@ -302,11 +338,20 @@ plt.show()
 
 
 
+
 cluster_palette_numbers = {
     -1: '#bbbcc0ff',
     0: '#bce784ff',        # green-ish
      1:  '#66cef4ff',        #  blue-ish
      2:  '#ec8ef8ff',       # red-ish
+}
+
+###new cluster palette numbers
+cluster_palette_numbers   = {
+    -1: '#bbbcc0ff',
+     1: '#bce784ff',        # green-ish
+     2:  '#66cef4ff',        #  blue-ish
+     0:  '#ec8ef8ff',       # red-ish
 }
 
 

@@ -56,7 +56,7 @@ for rat_index in range(0,4):
     for session_index in sessions[rat_index]:
         print('Session Number ... ', session_index + 1)
         for probe in ['Probe1','Probe2']:
-            file_name = rat_names[rat_index] + '_' + rat_sessions[rat_names[rat_index]][session_index] +probe +'neural_data.pkl'
+            file_name = rat_names[rat_index] + '_' + rat_sessions[rat_names[rat_index]][session_index] +probe +'neural_data_2.pkl'
             spike_file_dir = os.path.join(neural_data_dir, file_name)
             # Open the file in binary read mode
             with open(spike_file_dir, 'rb') as file:
@@ -156,7 +156,7 @@ final_dict = {
 }
 
 output_pd = pd.DataFrame(final_dict)
-output_pd.to_csv(os.path.join(output_directory,'total_neurons_new_criteria.csv'))
+output_pd.to_csv(os.path.join(output_directory,'total_neurons_new_criteria_2.csv'))
 
 
 # Set up the matplotlib figure
@@ -170,4 +170,4 @@ table.auto_set_font_size(False)
 table.set_fontsize(10)
 table.scale(1.2, 1.2)  # May need adjustment to fit your screen
 plt.show()
-fig.savefig(figures_directory + 'total_neuron_new_criteria.png')
+fig.savefig(figures_directory + 'total_neuron_new_criteria_2.png')

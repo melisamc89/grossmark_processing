@@ -14,7 +14,9 @@ import neo
 import umap
 from src.general_utils import *
 from scipy.ndimage import gaussian_filter1d
-
+from sklearn.linear_model import LinearRegression
+from scipy.signal import find_peaks
+from sklearn.metrics import r2_score
 
 import matplotlib.pyplot as plt
 
@@ -83,6 +85,183 @@ def plot_energies(energy_dict):
         plt.legend()
         plt.tight_layout()
         plt.show()
+area_palette = {
+    'pyr': '#bbbcc0ff',
+    'deep': '#cc9900',
+    'sup': '#9900ff',
+}
+
+
+def analyze_and_plot_energy_trends(energy_dict, k, save_dir='energy'):
+    os.makedirs(save_dir, exist_ok=True)
+    summary = []
+
+    fig, axs = plt.subplots(3, 1, figsize=(12, 10), sharex=True)
+    condition_order = ['PRE', 'DATA', 'POST']
+
+    for i, key in enumerate(condition_order):
+        ax = axs[i]
+        ax.set_title(f'{key} (k={k})')
+        ax.set_ylabel('Hopfield Energy')
+
+        for label in ['pyr', 'sup', 'deep']:
+            energy = energy_dict[key][label]
+            x = np.arange(len(energy))
+
+            # Find 50 local minima (negate for minima)
+            peaks, _ = find_peaks(-energy, distance=len(energy) // 50)
+            if len(peaks) > 50:
+                # Take the lowest 50 minima
+                sorted_idx = np.argsort(energy[peaks])[:50]
+                minima_x = peaks[sorted_idx]
+            else:
+                minima_x = peaks
+
+            minima_y = energy[minima_x]
+
+            # Fit linear regression on minima only
+            X = minima_x.reshape(-1, 1)
+            y = minima_y.reshape(-1, 1)
+            model = LinearRegression().fit(X, y)
+            y_fit = model.predict(X)
+            slope = float(model.coef_[0])
+            r_squared = r2_score(y, y_fit)
+            mean_energy = float(np.mean(energy))
+
+            # Plot full energy curve
+            ax.plot(x, energy, label=f'{label} (slope={slope:.3f}, R²={r_squared:.2f})',
+                    color=area_palette[label])
+
+            # Plot minima
+            ax.scatter(minima_x, minima_y, color=area_palette[label], s=20, marker='x')
+
+            # Plot regression line (across full x-range for visibility)
+            x_fit = np.linspace(0, len(energy) - 1, 200).reshape(-1, 1)
+            y_line = model.predict(x_fit)
+            ax.plot(x_fit, y_line, linestyle='--', color=area_palette[label])
+
+            # Store stats
+            summary.append({
+                'k': k,
+                'condition': key,
+                'region': label,
+                'slope': slope,
+                'r_squared': r_squared,
+                'mean_energy': mean_energy
+            })
+
+        ax.legend()
+        ax.grid(True)
+
+    axs[-1].set_xlabel('Time')
+    plt.tight_layout()
+    plt.savefig(os.path.join(save_dir, f'energy_fit_k{k}.svg'))
+    plt.savefig(os.path.join(save_dir, f'energy_fit_k{k}.png'))
+    plt.close()
+
+    # Convert summary to DataFrame
+    summary_df = pd.DataFrame(summary)
+    return summary_df
+
+def plot_summary_vs_k(summary_df, save_path='energy/summary_vs_k.svg'):
+    import seaborn as sns
+    import matplotlib.pyplot as plt
+
+    metrics = ['mean_energy', 'slope', 'r_squared']
+    titles = ['Mean Energy', 'Slope of Minima Fit', 'R² of Fit']
+
+    fig, axs = plt.subplots(1, 3, figsize=(18, 5), sharex=True)
+
+    # Create a line for each combination of condition and region
+    for i, metric in enumerate(metrics):
+        ax = axs[i]
+        for condition in ['PRE', 'DATA', 'POST']:
+            for region in ['pyr', 'sup', 'deep']:
+                subset = summary_df[(summary_df['condition'] == condition) & (summary_df['region'] == region)]
+                if not subset.empty:
+                    label = f'{region}-{condition}'
+                    ax.plot(subset['k'], subset[metric], marker='o', label=label)
+        ax.set_title(titles[i])
+        ax.set_xlabel('k (kernel width)')
+        ax.set_ylabel(metric.replace('_', ' ').title())
+        ax.grid(True)
+        if i == 0:
+            ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+
+    plt.tight_layout()
+    plt.savefig(save_path)
+    plt.close()
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.signal import find_peaks
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import r2_score
+
+
+def plot_energy_minima_by_region_all_k(data_summary_dict, save_path='energy/minima_regression_DATA_allfit.svg'):
+    """
+    Plot energy evolution and regression for DATA condition across all k values,
+    with one subplot per region (pyr, deep, sup), and curves for each kernel width.
+
+    Parameters:
+    - data_summary_dict: dict with keys as k, values as energy_dicts
+    - save_path: file path to save the figure
+    """
+    area_palette = {
+        'pyr': '#bbbcc0ff',
+        'deep': '#cc9900',
+        'sup': '#9900ff',
+    }
+
+    fig, axs = plt.subplots(1, 3, figsize=(18, 5))
+    region_names = ['pyr', 'deep', 'sup']
+
+    for i, region in enumerate(region_names):
+        ax = axs[i]
+        for k, energy_dict in data_summary_dict.items():
+            energy = energy_dict['DATA'][region]
+            if len(energy) < 100:  # sanity check
+                continue
+
+            # Find local minima (invert signal)
+            peaks, _ = find_peaks(-energy, distance=50)
+            #if len(peaks) > 50:
+            #    peaks = peaks[:50]
+            times = np.arange(len(energy))
+            y_vals = energy[peaks]
+
+            # Linear regression
+            X = peaks.reshape(-1, 1)
+            y = y_vals.reshape(-1, 1)
+            X = times.reshape(-1, 1)
+            y = energy.reshape(-1, 1)
+            model = LinearRegression().fit(X, y)
+
+            y_fit = model.predict(X)
+            r2 = r2_score(y, y_fit)
+            slope = model.coef_[0][0]
+
+            # Plot full energy trace
+            ax.plot(times, energy, label=f'k={k}, slope={slope:.3f}, R²={r2:.2f}', alpha=0.6)
+
+            # Overlay detected minima
+            #ax.scatter(peaks, y_vals, color='black', s=10)
+
+            # Overlay regression line
+            #ax.plot(peaks, y_fit.flatten(), linestyle='--', linewidth=2, color='black')
+            ax.plot(times, y_fit.flatten(), linestyle='--', linewidth=2, color='black')
+
+        ax.set_title(region.upper())
+        ax.set_xlabel('Time')
+        if i == 0:
+            ax.set_ylabel('Energy')
+        ax.legend(fontsize=8)
+        ax.grid(True)
+
+    fig.suptitle('Energy Minima Regression (DATA condition)', fontsize=16)
+    plt.tight_layout(rect=[0, 0, 1, 0.95])
+    plt.savefig(save_path)
+    plt.close()
 
 
 for rat_index in [0]:
@@ -90,27 +269,23 @@ for rat_index in [0]:
     for session_index in sessions[rat_index]:
         print('Session Number ... ', session_index + 1)
         for probe in ['Probe1']:
-            # --- Define kernel values ---
-            k_values = [5, 10, 15, 20, 25, 30]
-            # --- Store results ---
-            slope_records = []
-            r2_records = []
+            file_name = rat_names[rat_index] + '_' + rat_sessions[rat_names[rat_index]][session_index] +probe +'neural_data.pkl'
+            spike_file_dir = os.path.join(neural_data_dir, file_name)
+            # Open the file in binary read mode
+            with open(spike_file_dir, 'rb') as file:
+                # Load the data from the file
+                stimes = pkl.load(file)
+            # Define a list of kernel widths to test
+            k_values = [5,10,15,20,25,30,35,40,45,50]  # Or any other values you wish to explore
+            all_summaries = []
 
-            # --- Area colors ---
-            area_palette = {
-                'pyr': '#bbbcc0ff',
-                'deep': '#cc9900',
-                'sup': '#9900ff',
-            }
             for k in k_values:
+                #### LOAD DATA (BASE)
                 file_name = rat_names[rat_index] + '_' + rat_sessions[rat_names[rat_index]][
                     session_index] + probe + 'neural_data.pkl'
                 spike_file_dir = os.path.join(neural_data_dir, file_name)
-                # Open the file in binary read mode
                 with open(spike_file_dir, 'rb') as file:
-                    # Load the data from the file
                     stimes = pkl.load(file)
-                # --- Load base data ---
                 spikes_matrix = stimes['spikes_matrix']
                 data = spikes_to_rates(spikes_matrix.T, kernel_width=k)
                 layerID = stimes['LayerID']
@@ -118,205 +293,123 @@ for rat_index in [0]:
                 time = np.arange(0, spikes_matrix.shape[0])
                 pyr_index = np.array([i for i, ntype in enumerate(typeID) if ntype == 'PYR'])
                 deep_index = np.array(
-                    [i for i, (layer, ntype) in enumerate(zip(layerID, typeID)) if layer == 'DEEP' and ntype == 'PYR'])
-                superficial_index = np.array([i for i, (layer, ntype) in enumerate(zip(layerID, typeID)) if
-                                              layer == 'SUPERFICIAL' and ntype == 'PYR'])
+                    [i for i, (v, ntype) in enumerate(zip(layerID, typeID)) if v == 'DEEP' and ntype == 'PYR'])
+                superficial_index = np.array(
+                    [i for i, (v, ntype) in enumerate(zip(layerID, typeID)) if v == 'SUPERFICIAL' and ntype == 'PYR'])
                 data_pyr = data[:, pyr_index]
                 data_deep = data[:, deep_index]
                 data_sup = data[:, superficial_index]
 
-                # Load PRE
-                with open(os.path.join(neural_data_dir, file_name + 'PRE_neural_data.pkl'), 'rb') as file:
+                #### LOAD DATA PRE
+                file_name = rat_names[rat_index] + '_' + rat_sessions[rat_names[rat_index]][
+                    session_index] + probe + 'PRE_neural_data.pkl'
+                spike_file_dir = os.path.join(neural_data_dir, file_name)
+                with open(spike_file_dir, 'rb') as file:
                     stimes = pkl.load(file)
-                data = spikes_to_rates(stimes['spikes_matrix'].T, kernel_width=k)
+                spikes_matrix = stimes['spikes_matrix']
+                data = spikes_to_rates(spikes_matrix.T, kernel_width=k)
+                time = np.arange(0, spikes_matrix.shape[0])
                 data_pyr_PRE = data[:, pyr_index]
                 data_deep_PRE = data[:, deep_index]
                 data_sup_PRE = data[:, superficial_index]
 
-                # Load POST
-                with open(os.path.join(neural_data_dir, file_name + 'POST_neural_data.pkl'), 'rb') as file:
+                #### LOAD DATA POST
+                file_name = rat_names[rat_index] + '_' + rat_sessions[rat_names[rat_index]][
+                    session_index] + probe + 'POST_neural_data.pkl'
+                spike_file_dir = os.path.join(neural_data_dir, file_name)
+                with open(spike_file_dir, 'rb') as file:
                     stimes = pkl.load(file)
-                data = spikes_to_rates(stimes['spikes_matrix'].T, kernel_width=k)
+                spikes_matrix = stimes['spikes_matrix']
+                data = spikes_to_rates(spikes_matrix.T, kernel_width=k)
+                time = np.arange(0, spikes_matrix.shape[0])
                 data_pyr_POST = data[:, pyr_index]
                 data_deep_POST = data[:, deep_index]
                 data_sup_POST = data[:, superficial_index]
 
-                # Construct data dictionaries
+                # Pack into dictionaries
                 data_pre = {'pyr': data_pyr_PRE, 'sup': data_sup_PRE, 'deep': data_deep_PRE}
                 data_now = {'pyr': data_pyr, 'sup': data_sup, 'deep': data_deep}
                 data_post = {'pyr': data_pyr_POST, 'sup': data_sup_POST, 'deep': data_deep_POST}
 
-                # Compute energy
                 energy_dict = split_and_energy(data_pre, data_now, data_post)
 
-                # Regression analysis
-                conditions = ['PRE', 'DATA', 'POST']
-                cell_types = ['pyr', 'sup', 'deep']
-                for condition in conditions:
-                    for cell_type in cell_types:
-                        energy = energy_dict[condition][cell_type]
-                        peaks, _ = find_peaks(-energy)
-                        if len(peaks) > 1:
-                            x_peaks = peaks.reshape(-1, 1)
-                            y_peaks = energy[peaks]
-                            model = LinearRegression().fit(x_peaks, y_peaks)
-                            y_pred = model.predict(x_peaks)
-                            r2 = r2_score(y_peaks, y_pred)
-                            slope = model.coef_[0]
-                            slope_records.append(
-                                {'k': k, 'Condition': condition, 'CellType': cell_type, 'Slope': slope})
-                            r2_records.append({'k': k, 'Condition': condition, 'CellType': cell_type, 'R2': r2})
+                summary_df = analyze_and_plot_energy_trends(energy_dict, k)
+                all_summaries.append(summary_df)
+                #energy_dict = split_and_energy(data_pre, data_now, data_post)
+                #energy_dict = split_and_energy(data_pre, data_now, data_post)
 
-                # Save regression plot
-                fig, axs = plt.subplots(3, 1, figsize=(10, 10))
-                for i, condition in enumerate(conditions):
-                    ax = axs[i]
-                    ax.set_title(f'Energy Regression - {condition} (k={k})')
-                    for cell_type in cell_types:
-                        energy = energy_dict[condition][cell_type]
-                        ax.plot(energy, label=cell_type, alpha=0.6, color=area_palette[cell_type])
-                        peaks, _ = find_peaks(-energy)
-                        if len(peaks) > 1:
-                            x_peaks = peaks.reshape(-1, 1)
-                            y_peaks = energy[peaks]
-                            model = LinearRegression().fit(x_peaks, y_peaks)
-                            y_pred = model.predict(x_peaks)
-                            ax.plot(peaks, y_pred, '--', label=f'{cell_type} fit', color=area_palette[cell_type])
-                    ax.set_ylabel('Energy')
-                    ax.legend()
-                axs[-1].set_xlabel('Time')
-                plt.tight_layout()
-                plt.savefig(f'energy/energy_regression_peaks_k{k}.png')
-                plt.savefig(f'energy/energy_regression_peaks_k{k}.svg')
-                plt.close()
-
-            # --- Save results as CSV ---
-            df_slope = pd.DataFrame(slope_records)
-            df_r2 = pd.DataFrame(r2_records)
-            df_slope.to_csv('energy/slope_vs_k.csv', index=False)
-            df_r2.to_csv('energy/r2_vs_k.csv', index=False)
-
-            # --- Plot slope vs k ---
-            plt.figure(figsize=(8, 5))
-            for cell_type in cell_types:
-                subset = df_slope[df_slope['CellType'] == cell_type]
-                means = subset.groupby('k')['Slope'].mean()
-                plt.plot(means.index, means.values, label=cell_type, marker='o')
-            plt.xlabel('Kernel Width (k)')
-            plt.ylabel('Mean Slope')
-            plt.title('Slope of Energy Minima vs. Kernel Width')
-            plt.legend()
-            plt.tight_layout()
-            plt.savefig('energy/slope_vs_k.png')
-            plt.savefig('energy/slope_vs_k.svg')
-            plt.close()
-
-            #############################3
-            k = 25
-            spikes_matrix = stimes['spikes_matrix']
-            data = spikes_to_rates(spikes_matrix.T, kernel_width=k)
-            layerID = stimes['LayerID']
-            typeID = stimes['TypeID']
-            time = np.arange(0,spikes_matrix.shape[0])
-            pyr_index = np.array([index for index, ntype in enumerate(typeID) if
-                                   ntype == 'PYR'])
-            # Find indices where the value is 'DEEP'
-            deep_index = np.array([index for index, (value, ntype) in enumerate(zip(layerID, typeID)) if
-                                   value == 'DEEP' and ntype == 'PYR'])
-            # Find indices where the value is 'SUPERFICIAL'
-            superficial_index = np.array([index for index, (value, ntype)  in enumerate(zip(layerID, typeID)) if
-                                          value == 'SUPERFICIAL' and ntype == 'PYR'])
-            data_deep= data[:,deep_index]
-            data_sup =  data[:,superficial_index]
-            data_pyr=data[:,pyr_index]
-
-            ###### LOAD DATA PRE
-            file_name = rat_names[rat_index] + '_' + rat_sessions[rat_names[rat_index]][
-                session_index] + probe + 'PRE_neural_data.pkl'
-            spike_file_dir = os.path.join(neural_data_dir, file_name)
-            # Open the file in binary read mode
-            with open(spike_file_dir, 'rb') as file:
-                # Load the data from the file
-                stimes = pkl.load(file)
-            spikes_matrix = stimes['spikes_matrix']
-            data = spikes_to_rates(spikes_matrix.T, kernel_width=k)
-            time = np.arange(0, spikes_matrix.shape[0])
-            data_deep_PRE = data[:, deep_index]
-            data_sup_PRE = data[:, superficial_index]
-            data_pyr_PRE = data[:, pyr_index]
+                # Plot
+                #plot_energies(energy_dict, k)
+                # Combine and save all results
+            final_summary_df = pd.concat(all_summaries, ignore_index=True)
+            final_summary_df.to_csv('energy/energy_summary.csv', index=False)
 
 
-            ###### LOAD DATA POST
-            file_name = rat_names[rat_index] + '_' + rat_sessions[rat_names[rat_index]][
-                session_index] + probe + 'POST_neural_data.pkl'
-            spike_file_dir = os.path.join(neural_data_dir, file_name)
-            # Open the file in binary read mode
-            with open(spike_file_dir, 'rb') as file:
-                # Load the data from the file
-                stimes = pkl.load(file)
-            spikes_matrix = stimes['spikes_matrix']
-            data = spikes_to_rates(spikes_matrix.T, kernel_width=k)
-            time = np.arange(0, spikes_matrix.shape[0])
-            data_deep_POST = data[:, deep_index]
-            data_sup_POST = data[:, superficial_index]
-            data_pyr_POST = data[:, pyr_index]
-
-            # Assume the data variables are already defined from your loading code:
-            data_pre = {
-                'pyr': data_pyr_PRE,
-                'sup': data_sup_PRE,
-                'deep': data_deep_PRE
-            }
-
-            data_now = {
-                'pyr': data_pyr,
-                'sup': data_sup,
-                'deep': data_deep
-            }
-
-            data_post = {
-                'pyr': data_pyr_POST,
-                'sup': data_sup_POST,
-                'deep': data_deep_POST
-            }
-
-            energy_dict = split_and_energy(data_pre, data_now, data_post)
-
-            import os
-            import numpy as np
-            import pandas as pd
-            import matplotlib.pyplot as plt
-            from sklearn.metrics import r2_score
-            from scipy.signal import find_peaks
-            from sklearn.linear_model import LinearRegression
-
-            # Ensure subdirectory exists
-            os.makedirs('energy', exist_ok=True)
-
-            area_palette = {
-                'pyr': '#bbbcc0ff',
-                'deep': '#cc9900',
-                'sup': '#9900ff',
-            }
+           plot_summary_vs_k(final_summary_df)
 
 
-            # --- Line plot of energy over time ---
-            # --- Line plot of energy over time ---
-            def plot_energies(energy_dict, k):
-                for key in ['PRE', 'DATA', 'POST']:
-                    plt.figure(figsize=(10, 4))
-                    for label in ['pyr', 'sup', 'deep']:
-                        plt.plot(energy_dict[key][label], label=label, color=area_palette[label])
-                    plt.title(f'Energy Over Time ({key}, k={k})')
-                    plt.xlabel('Time')
-                    plt.ylabel('Hopfield Energy')
-                    plt.legend()
-                    plt.tight_layout()
-                    plt.savefig(f'energy/energy_over_time_{key.lower()}_k{k}.svg')
-                    plt.close()
+            # Dictionary to store results per k
+            data_summary_dict = {}
+            for k in k_values:
+                # Load CURRENT session data
+                file_name = rat_names[rat_index] + '_' + rat_sessions[rat_names[rat_index]][
+                    session_index] + probe + 'neural_data.pkl'
+                spike_file_dir = os.path.join(neural_data_dir, file_name)
+                with open(spike_file_dir, 'rb') as file:
+                    stimes = pkl.load(file)
+                spikes_matrix = stimes['spikes_matrix']
+                data = spikes_to_rates(spikes_matrix.T, kernel_width=k)
+                layerID = stimes['LayerID']
+                typeID = stimes['TypeID']
+                pyr_index = np.array([i for i, t in enumerate(typeID) if t == 'PYR'])
+                deep_index = np.array(
+                    [i for i, (l, t) in enumerate(zip(layerID, typeID)) if l == 'DEEP' and t == 'PYR'])
+                superficial_index = np.array(
+                    [i for i, (l, t) in enumerate(zip(layerID, typeID)) if l == 'SUPERFICIAL' and t == 'PYR'])
+                data_now = {
+                    'pyr': data[:, pyr_index],
+                    'deep': data[:, deep_index],
+                    'sup': data[:, superficial_index]
+                }
+                # Load PRE session data
+                file_name = rat_names[rat_index] + '_' + rat_sessions[rat_names[rat_index]][
+                    session_index] + probe + 'PRE_neural_data.pkl'
+                spike_file_dir = os.path.join(neural_data_dir, file_name)
+                with open(spike_file_dir, 'rb') as file:
+                    stimes = pkl.load(file)
+                spikes_matrix = stimes['spikes_matrix']
+                data = spikes_to_rates(spikes_matrix.T, kernel_width=k)
+                data_pre = {
+                    'pyr': data[:, pyr_index],
+                    'deep': data[:, deep_index],
+                    'sup': data[:, superficial_index]
+                }
+                # Load POST session data
+                file_name = rat_names[rat_index] + '_' + rat_sessions[rat_names[rat_index]][
+                    session_index] + probe + 'POST_neural_data.pkl'
+                spike_file_dir = os.path.join(neural_data_dir, file_name)
+                with open(spike_file_dir, 'rb') as file:
+                    stimes = pkl.load(file)
+                spikes_matrix = stimes['spikes_matrix']
+                data = spikes_to_rates(spikes_matrix.T, kernel_width=k)
+                data_post = {
+                    'pyr': data[:, pyr_index],
+                    'deep': data[:, deep_index],
+                    'sup': data[:, superficial_index]
+                }
+
+                # Compute energy across PRE, DATA, POST
+                energy_dict = split_and_energy(data_pre, data_now, data_post)
+                # Store energy_dict in main dictionary
+                data_summary_dict[k] = energy_dict
+
+            plot_energy_minima_by_region_all_k(data_summary_dict)
 
 
-            plot_energies(energy_dict, k)
+
+
+
+
 
             # --- Bar plot of mean energy with error bars ---
             plt.figure(figsize=(8, 5))

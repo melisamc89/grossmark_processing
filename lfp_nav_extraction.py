@@ -4,9 +4,10 @@ from src.plotting_utils import *
 from src.channel_information import *
 from src.config import *
 
-for rat_index in range(0):
+for rat_index in [0]:
     print('Extraction Ripple Bands from rat: ', rat_names[rat_index])
-    for session_index in sessions[rat_index]:
+    #for session_index in sessions[rat_index]:
+    for session_index in [0]:
         print('Session Number ... ', session_index + 1)
         rat_directory = os.path.join(data_directory, rat_names[rat_index])
         session_directory = rat_names[rat_index]+'_'+str(rat_sessions[rat_names[rat_index]][session_index])
@@ -27,8 +28,10 @@ for rat_index in range(0):
         lfp = np.fromfile(eeg_file_directory, dtype='int16')
         lfp = lfp.reshape((-1, number_of_channels[rat_names[rat_index]]))
         navigation_period = session_info['epochs']['mazeEpoch'][1] - session_info['epochs']['mazeEpoch'][0]
+
         start_resting = int(session_info['epochs']['mazeEpoch'][0] * lfp_sr )
         end_resting = int(session_info['epochs']['mazeEpoch'][1] * lfp_sr )
+
         navigation_signal = get_signals_segment(lfp, start_resting, end_resting)
         del lfp
         #target_fs = 500  # Target sampling rate in Hz

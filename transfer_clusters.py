@@ -46,24 +46,6 @@ else:
     non_learners = [5,6]
     non_learners_names = ['M2021', 'M2022']
 
-# information about dataset2
-
-imaging_data = 'egrin'
-if imaging_data == 'miniscope_and_egrin':
-    mice_dict = {'superficial': ['CGrin1','CZ3','CZ4','CZ6','CZ8','CZ9',
-                                 'CalbEphys1GRIN1', 'CalbEphys1GRIN2'],
-                'deep':['ChZ4','ChZ7','ChZ8','GC2','GC3','GC7','GC5_nvista','TGrin1',
-                        'Thy1Ephys1GRIN1', 'Thy1Ephys1GRIN2']
-                }
-if imaging_data == 'egrin':
-    mice_dict = {'superficial': ['CalbEphys1GRIN1', 'CalbEphys1GRIN2'],
-            'deep':['Thy1Ephys1GRIN1', 'Thy1Ephys1GRIN2']
-           }
-if imaging_data == 'miniscope':
-    mice_dict = {'superficial': ['CGrin1','CZ3','CZ4','CZ6','CZ8','CZ9'],
-          'deep':['ChZ4','ChZ7','ChZ8','GC2','GC3','GC7','GC5_nvista','TGrin1']
-            }
-
 ### loading dataset 1
 mice_list = learners + non_learners
 mice_names = learners_names + non_learners_names
@@ -186,8 +168,29 @@ from src.config import *
 # Setup
 MIR_directory = os.path.join(base_directory, 'MIR')
 
-files_names = ['Achilles_rat_MIR.pkl', 'Calb_mouse_MIR.pkl', 'Thy_mouse_MIR.pkl']
-mouse_names = ['Achilles', 'Calb', 'Thy']
+
+
+#files_names = ['Achilles_rat_MIR.pkl', 'Calb_mouse_MIR.pkl', 'Thy_mouse_MIR.pkl']
+#mouse_names = ['Achilles', 'Calb', 'Thy']
+
+files_names  = ['Achilles_rat_MIR.pkl',
+        'Calb01_11_03_16_02_25_time_project_deep_sup_MIR.pkl',
+         'Calb01uLED_10_17_09_05_56_time_project_deep_sup_MIR.pkl',
+        'Calb01uLED_10_18_11_23_15_time_project_deep_sup_MIR.pkl',
+         'Calb01uLED_10_19_11_25_09_time_project_deep_sup_MIR.pkl',
+         'Calb01uLED_10_21_12_48_35_time_project_deep_sup_MIR.pkl',
+         'Thy01uLED_10_19_09_07_25_time_project_deep_sup_MIR.pkl',
+         'Thy01uLED_10_10_09_10_26_time_project_deep_sup_MIR.pkl']
+
+mouse_names = ['Achilles',
+        'Calb01_11_03_16_02_25',
+         'Calb01uLED_10_17_09_05_56',
+        'Calb01uLED_10_18_11_23_15',
+         'Calb01uLED_10_19_11_25_09',
+         'Calb01uLED_10_21_12_48_35',
+         'Thy01uLED_10_19_09_07_25',
+         'Thy01uLED_10_10_09_10_26']
+
 behavior_keys = ['pos', 'posdir', 'dir', 'speed', 'time', 'inner_trial_time', 'trial_id']
 
 # Initialize storage
@@ -200,7 +203,7 @@ for fname, mouse in zip(files_names, mouse_names):
     filepath = os.path.join(MIR_directory, fname)
     with open(filepath, 'rb') as f:
         mi_dict = pickle.load(f)
-
+    print(mouse)
     for probe, probe_data in mi_dict.items():
         mi_all = np.array(probe_data['MIR'])  # shape (7, num_neurons)
         area = probe_data['area']             # list of area labels, length = num_neurons
@@ -229,6 +232,7 @@ mi_pd = pd.DataFrame({
     **z_mi_values
 })
 
+
 import matplotlib.pyplot as plt
 from sklearn.cluster import KMeans
 from sklearn.manifold import TSNE
@@ -236,7 +240,7 @@ import seaborn as sns
 # Compute total MIR per neuron
 mi_pd['total_mir'] = mi_pd[['pos', 'posdir', 'dir', 'speed', 'time', 'inner_trial_time', 'trial_id']].sum(axis=1)
 # Filter for PYR cells and total_mir >= 0.5
-mi_pd = mi_pd[(mi_pd['typeID'] == 'PYR')].reset_index(drop=True)
+mi_pd = mi_pd[(mi_pd['typeID'] == 'PYR') | (mi_pd['typeID'] == 'pyr')].reset_index(drop=True)
 
 # 1. Sum of raw MI values (across all behavioral labels)
 behavior_keys = list(raw_mi_values.keys())  # ['pos', 'posdir', 'dir', 'speed', 'time', 'inner_trial_time', 'trial_id']
@@ -327,7 +331,7 @@ for col_idx, col in enumerate(plot_features):
 # Final layout
 plt.tight_layout()
 plt.suptitle(f'{reducer_name} Embedding: Dataset 1 (row 1) vs. Transferred Dataset 2 (row 2)', fontsize=16, y=1.02)
-plt.savefig(os.path.join(data_dir, f'MI_transferred_cluster_{reducer_name}_{signal_name}_area_mouse_zscored_{imaging_data}.png'), dpi=400, bbox_inches="tight")
+plt.savefig(os.path.join(data_dir, f'MI_transferred_cluster_{reducer_name}_{signal_name}_area_mouse_zscored.png'), dpi=400, bbox_inches="tight")
 plt.show()
 
 
@@ -345,9 +349,9 @@ ax.scatter(df_unassigned[ f'{reducer_name}1'], df_unassigned[ f'{reducer_name}2'
 
 custom_cluster_palette  = {
     -10: '#bbbcc0ff',
-     0: '#bce784ff',        # green-ish
-     1:  '#66cef4ff',        #  blue-ish
-     2:  '#ec8ef8ff',       # red-ish
+     1: '#bce784ff',        # green-ish
+     2:  '#66cef4ff',        #  blue-ish
+     0:  '#ec8ef8ff',       # red-ish
 }
 
 sns.scatterplot(data=df_assigned, x=rf'{reducer_name}1', y=f'{reducer_name}2', hue='transferred_cluster',
@@ -397,6 +401,8 @@ mouse_totals = mi_pd_lt.groupby(['area', 'mouse']).size().reset_index(name='tota
 mouse_counts = pd.merge(mouse_counts, mouse_totals, on=['area', 'mouse'])
 mouse_counts['normalized'] = mouse_counts['count'] / mouse_counts['total_neurons']
 # Plotting
+# Standardize 'area' to uppercase
+mouse_counts['area'] = mouse_counts['area'].str.upper()
 palette = {'SUPERFICIAL': '#9900ff', 'DEEP': '#cc9900'}
 
 plt.figure(figsize=(10, 6))
@@ -461,8 +467,8 @@ cluster_ids = sorted(mouse_counts[clusters_name].unique())
 
 for clust in cluster_ids:
     group = mouse_counts[mouse_counts[clusters_name] == clust]
-    sup_vals = group[group['area'] == 'superficial']['normalized']
-    deep_vals = group[group['area'] == 'deep']['normalized']
+    sup_vals = group[group['area'] == 'SUPERFICIAL']['normalized']
+    deep_vals = group[group['area'] == 'DEEP']['normalized']
     if len(sup_vals) > 0 and len(deep_vals) > 0:
         stat, p = mannwhitneyu(sup_vals, deep_vals, alternative='two-sided')
     else:
@@ -480,6 +486,7 @@ from scipy.stats import mannwhitneyu
 raw_mi_cols = list(raw_mi_values.keys())  # e.g., ['pos', 'posdir', 'dir', ...]
 
 clusters = sorted(mi_pd_lt['transferred_cluster'].unique())
+mi_pd_lt['area'] = mi_pd_lt['area'].str.upper()
 
 # Plot per MI feature
 for info in raw_mi_cols:
@@ -504,8 +511,8 @@ for info in raw_mi_cols:
 
     for clust in clusters:
         group = mi_pd_lt[mi_pd_lt['transferred_cluster'] == clust]
-        sup_vals = group[group['area'] == 'superficial'][info]
-        deep_vals = group[group['area'] == 'deep'][info]
+        sup_vals = group[group['area'] == 'SUPERFICIAL'][info]
+        deep_vals = group[group['area'] == 'DEEP'][info]
 
         if len(sup_vals) > 0 and len(deep_vals) > 0:
             stat, p = mannwhitneyu(sup_vals, deep_vals, alternative='two-sided')
@@ -523,7 +530,7 @@ for info in raw_mi_cols:
 
     plt.legend(title='Area', loc='upper right')
     plt.tight_layout()
-    plt.savefig(os.path.join(save_dir, f"violin_MI_{info}_by_cluster_area_{imaging_data}.png"), dpi=300)
+    plt.savefig(os.path.join(save_dir, f"violin_MI_{info}_by_cluster_area.png"), dpi=300)
     plt.show()
 
 #### save cluster assignments
@@ -537,7 +544,7 @@ for fname, mouse in zip(files_names, mouse_names):
         clusters_mouse = mi_pd_lt[(mi_pd_lt['mouse'] == mouse) & (mi_pd_lt['probe']==probe)]['transferred_cluster'].values
         signal = np.array(probe_data['signal'])
         typeID = np.array(probe_data['typeID'])
-        pyr_neurons = np.where(typeID == 'PYR')[0]
+        pyr_neurons = np.where((typeID == 'PYR') | (typeID == 'pyr'))[0]
         signal = signal[:,pyr_neurons]
         behavior_dict = probe_data['behaviour']
         new_dict[probe] = {'signal': signal, 'clusterID': clusters_mouse, 'behaviour': behavior_dict}

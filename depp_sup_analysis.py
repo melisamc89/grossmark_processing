@@ -37,12 +37,12 @@ rat_index = [0,1,2,3]
 sessions = [[0],[0],[2],[1]]
 speed_lim = 0.05
 
-for rat_index in [0]:
+for rat_index in [1,2,3]:
     print('Extracting spikes times from rat: ', rat_names[rat_index])
     for session_index in sessions[rat_index]:
         print('Session Number ... ', session_index + 1)
         for probe in ['Probe1','Probe2']:
-            file_name = rat_names[rat_index] + '_' + rat_sessions[rat_names[rat_index]][session_index] +probe +'neural_data.pkl'
+            file_name = rat_names[rat_index] + '_' + rat_sessions[rat_names[rat_index]][session_index] +probe +'neural_data_2.pkl'
             spike_file_dir = os.path.join(neural_data_dir, file_name)
             # Open the file in binary read mode
 
@@ -178,7 +178,7 @@ for rat_index in [0]:
                 fig.tight_layout()
 
             # Define the filename where the dictionary will be stored
-            figure_name = rat_names[rat_index] + '_' + str(rat_sessions[rat_names[rat_index]][session_index]) +'_' +probe + 'umap_deep_sup_filter_'+str(k)+'.png'
+            figure_name = rat_names[rat_index] + '_' + str(rat_sessions[rat_names[rat_index]][session_index]) +'_' +probe + 'umap_deep_sup_filter_'+str(k)+'_2.png'
             fig.savefig(os.path.join(figures_directory, figure_name))
 
 

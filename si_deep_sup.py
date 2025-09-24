@@ -35,7 +35,7 @@ params1 = {
     'n_bins': 10,
     'discrete_label': False,
     'continuity_kernel': None,
-    'perc_neigh': 1,
+    'perc_neigh': 100,
     'num_shuffles': 0,
     'verbose': False
 }
@@ -44,17 +44,34 @@ params2 = {
     'n_bins': 3,
     'discrete_label': True,
     'continuity_kernel': None,
-    'n_neighbors': 50,
+    'n_neighbors': 1,
     'num_shuffles': 0,
     'verbose': False
 }
 
-si_neigh = 50
+si_neigh = 100
 si_beh_params = {}
 for beh in ['pos', 'speed', 'trial_id_mat','time','(pos,dir)']:
     si_beh_params[beh] = copy.deepcopy(params1)
 for beh in ['dir']:
     si_beh_params[beh] = copy.deepcopy(params2)
+
+def preprocess_spikes(traces, sig_up=8, sig_down=24):
+    #lp_traces = uniform_filter1d(traces, size=4000, axis=0)
+    #clean_traces = gaussian_filter1d(traces, sigma=sig_filt, axis=0)
+    conv_traces = np.zeros(traces.shape)
+
+    gaus = lambda x, sig, amp, vo: amp * np.exp(-(((x) ** 2) / (2 * sig ** 2))) + vo;
+    x = np.arange(-5 * sig_down, 5 * sig_down, 1);
+    left_gauss = gaus(x, sig_up, 1, 0);
+    left_gauss[5 * sig_down + 1:] = 0
+    right_gauss = gaus(x, sig_down, 1, 0);
+    right_gauss[:5 * sig_down + 1] = 0
+    gaus_kernel = right_gauss + left_gauss;
+
+    for cell in range(traces.shape[1]):
+        conv_traces[:, cell] = np.convolve(traces[:, cell], gaus_kernel, 'same')
+    return conv_traces
 
 
 neural_data_dir = files_directory
@@ -68,7 +85,7 @@ for rat_index in rats:
         print('Session Number ... ', session_index + 1)
         for probe in ['Probe1','Probe2']:
             si_dict= dict()
-            file_name = rat_names[rat_index] + '_' + rat_sessions[rat_names[rat_index]][session_index] +probe +'neural_data.pkl'
+            file_name = rat_names[rat_index] + '_' + rat_sessions[rat_names[rat_index]][session_index] +probe +'neural_data_2.pkl'
             spike_file_dir = os.path.join(neural_data_dir, file_name)
             # Open the file in binary read mode
             with open(spike_file_dir, 'rb') as file:
@@ -101,6 +118,7 @@ for rat_index in rats:
             }
 
             spikes_matrix = stimes['spikes_matrix']
+            #spikes_matrix = preprocess_spikes(spikes_matrix)
             spikes_matrix = spikes_matrix[valid_mov,:]
             layerID = stimes['LayerID']
             typeID = stimes['TypeID']
@@ -123,7 +141,7 @@ for rat_index in rats:
                 si_dict[beh_name] = dict()
 
                 for index, filter_size in enumerate(kernels):
-                    si_beh_params[beh_name]['n_neighbors'] = si_neigh + 5 * filter_size
+                    #si_beh_params[beh_name]['n_neighbors'] = si_neigh + 5 * filter_size
                     data = spikes_to_rates(spikes_matrix.T, kernel_width=filter_size)
                     deep_spikes = data[:,deep_index]
                     sup_spikes =  data[:,superficial_index]
@@ -151,7 +169,7 @@ for rat_index in rats:
             data_output_directory = '/home/melma31/Documents/time_project/SI_filters'
             # Define the filename where the dictionary will be stored
             output_filename = rat_names[rat_index] + '_' + rat_sessions[rat_names[rat_index]][
-                session_index] +'_'+ probe + '_si_variable_nei_2-60.pkl'
+                session_index] +'_'+ probe + '_si_100_2-60_2.pkl'
             # Open the file for writing in binary mode and dump the dictionary
             with open(os.path.join(data_output_directory, output_filename), 'wb') as file:
                 pkl.dump(si_dict, file)
@@ -179,7 +197,7 @@ for rat_index in rats:
     for count_session, session_index in enumerate(sessions[rat_index]):
         for probe in probes_used[rat_index][count_session]:
             # Construct filename (assuming output_filename uses rat_name and session)
-            output_filename = rat_name + '_' + rat_sessions[rat_name][session_index] + '_' + probe + '_si_100_2-60.pkl'
+            output_filename = rat_name + '_' + rat_sessions[rat_name][session_index] + '_' + probe + '_si_variable_nei_2-60_assimetry.pkl'
             file_path = os.path.join(data_output_directory, output_filename)
             # Load the .pkl dictionary
             with open(file_path, 'rb') as file:

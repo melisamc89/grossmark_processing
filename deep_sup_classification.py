@@ -38,9 +38,9 @@ def classify_deep_sup_2(neuron_waveform, power_spectrum, low_freq= 150, high_fre
     sorted_area = np.sort(area_vect)[::-1]
     sorted_area_index = np.argsort(area_vect)[::-1]
     diff_sorted_area = np.abs(np.diff(sorted_area))
-    #if diff_sorted_area[0] < 0.005:
-    #    max_power_spectrum_channel = min(sorted_area_index[0], sorted_area_index[1])
-    max_power_spectrum_channel = sorted_area_index[0]
+    if diff_sorted_area[0] < 0.005:
+        max_power_spectrum_channel = min(sorted_area_index[0], sorted_area_index[1])
+    #max_power_spectrum_channel = sorted_area_index[0]
     classification = 'BORDER'
     if max_index > max_power_spectrum_channel:
         classification = 'SUPERFICIAL'
@@ -130,7 +130,9 @@ for rat_index in [0,1,2,3]:
                     cluster_id = waveform[probe][shank]['cluster_id'][neuron]
                     power_spectrum = ripple[probe][shank]['power_spectrum']
                     lfp = ripple[probe][shank]['lfp']
-                    classification, max_power_spectrum_channel, max_index = classify_deep_sup(neuron_waveform, lfp ,1000, low_freq,high_freq)
+                    #classification, max_power_spectrum_channel, max_index = classify_deep_sup(neuron_waveform, lfp ,1000, low_freq,high_freq)
+                    classification, max_power_spectrum_channel, max_index = classify_deep_sup_2(neuron_waveform,power_spectrum, low_freq,high_freq)
+
                     neuron_class_list.append(classification)
                     cluster_id_list.append(cluster_id)
                     if neuron in spkGroupPyr_cells:
@@ -160,7 +162,7 @@ for rat_index in [0,1,2,3]:
 
         neuron_classification['ripple_range'] = [150,250]
         # Define the filename where the dictionary will be stored
-        output_filename = rat_names[rat_index]+'_' + rat_sessions[rat_names[rat_index]][rat_session] + '_neuron_classification_output.pkl'
+        output_filename = rat_names[rat_index]+'_' + rat_sessions[rat_names[rat_index]][rat_session] + '_neuron_classification_output_2.pkl'
         # Open the file for writing in binary mode and dump the dictionary
         if not os.path.exists(files_directory):
             os.makedirs(files_directory)

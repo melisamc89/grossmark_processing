@@ -146,7 +146,7 @@ def plot_waveform_and_power(waveforms, power_spectrum, limit_channel,max_peak, t
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6), gridspec_kw={'width_ratios': [3, 1]})
 
     # Calculate offsets to separate the waveforms and power spectra vertically
-    offset_increment = 0.001  # Adjust based on your data for better visibility
+    offset_increment = 50  # Adjust based on your data for better visibility
 
     # Plot each channel's waveform with an offset in ax1
     for channel in range(waveforms.shape[1]):

@@ -7,5 +7,6 @@ output_directory = os.path.join(base_directory, 'output')
 figures_directory = os.path.join(base_directory, 'figures')
 
 files_directory = os.path.join(base_directory, 'classification')
+lfp_directory = os.path.join(base_directory, 'output')
 
 

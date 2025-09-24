@@ -18,6 +18,24 @@ import random
 import matplotlib.pyplot as plt
 from src.structure_index import *
 
+
+def preprocess_spikes(traces, sig_up=8, sig_down=24):
+    #lp_traces = uniform_filter1d(traces, size=4000, axis=0)
+    #clean_traces = gaussian_filter1d(traces, sigma=sig_filt, axis=0)
+    conv_traces = np.zeros(traces.shape)
+
+    gaus = lambda x, sig, amp, vo: amp * np.exp(-(((x) ** 2) / (2 * sig ** 2))) + vo;
+    x = np.arange(-5 * sig_down, 5 * sig_down, 1);
+    left_gauss = gaus(x, sig_up, 1, 0);
+    left_gauss[5 * sig_down + 1:] = 0
+    right_gauss = gaus(x, sig_down, 1, 0);
+    right_gauss[:5 * sig_down + 1] = 0
+    gaus_kernel = right_gauss + left_gauss;
+
+    for cell in range(traces.shape[1]):
+        conv_traces[:, cell] = np.convolve(traces[:, cell], gaus_kernel, 'same')
+    return conv_traces
+
 def spikes_to_rates(spikes, kernel_width=10):
     gk = GaussianKernel(kernel_width * ms)
     rates = []
@@ -99,6 +117,7 @@ for rat_index in rats:
             }
 
             spikes_matrix = stimes['spikes_matrix']
+            spikes_matrix = preprocess_spikes(spikes_matrix,sig_up=8,sig_down=24)
             spikes_matrix = spikes_matrix[valid_mov,:]
             #data = spikes_to_rates(spikes_matrix[:, pyr_index].T, kernel_width=filter_size)
 
@@ -161,5 +180,5 @@ for rat_index in rats:
                 figure_name = rat_names[rat_index] + '_' + str(
                     rat_sessions[rat_names[rat_index]][session_index]) + '_' + probe + 'umap_' + figure_data[
                                                                                                  fig_idx] + '_filters_pyr.png'
-                fig.savefig(os.path.join(figures_directory, 'filters_examples', figure_name))
+                fig.savefig(os.path.join(figures_directory, 'filters_examples_assimetry_', figure_name))
 

@@ -18,6 +18,26 @@ import random
 import matplotlib.pyplot as plt
 from src.structure_index import *
 
+
+### adapted from Julio's proprocess_traces
+
+def preprocess_spikes(traces, sig_up=8, sig_down=24):
+    #lp_traces = uniform_filter1d(traces, size=4000, axis=0)
+    #clean_traces = gaussian_filter1d(traces, sigma=sig_filt, axis=0)
+    conv_traces = np.zeros(traces.shape)
+
+    gaus = lambda x, sig, amp, vo: amp * np.exp(-(((x) ** 2) / (2 * sig ** 2))) + vo;
+    x = np.arange(-5 * sig_down, 5 * sig_down, 1);
+    left_gauss = gaus(x, sig_up, 1, 0);
+    left_gauss[5 * sig_down + 1:] = 0
+    right_gauss = gaus(x, sig_down, 1, 0);
+    right_gauss[:5 * sig_down + 1] = 0
+    gaus_kernel = right_gauss + left_gauss;
+
+    for cell in range(traces.shape[1]):
+        conv_traces[:, cell] = np.convolve(traces[:, cell], gaus_kernel, 'same')
+    return conv_traces
+
 def spikes_to_rates(spikes, kernel_width=10):
     gk = GaussianKernel(kernel_width * ms)
     rates = []
@@ -104,7 +124,7 @@ for rat_index in rats:
             import numpy as np
             random_neuron = 10
             # Define the trial_ids we want to display
-            trial_ids_to_show = [10, 11, 12]
+            trial_ids_to_show = [1,2,3,4,5,6,7,8,9,10, 11, 12]
 
             # Get the indices where trial_id is in the desired range
             trial_mask = np.isin(trial_id, trial_ids_to_show)
@@ -201,3 +221,76 @@ for rat_index in rats:
             plt.tight_layout()
             plt.savefig(os.path.join(figures_directory + 'heatmap_example.svg'))
             plt.show()
+
+
+
+fig, axs = plt.subplots(4, 1, figsize=(12, 18))
+time_filtered = np.arange(len(position_filtered))
+
+# --- 1) Position vs time
+axs[0].plot(time_filtered, position_filtered, linewidth=1.5)
+axs[0].set_title('Position vs Time')
+axs[0].set_xlabel('Time (samples)')
+axs[0].set_ylabel('Position')
+
+# --- 2) One cell with multiple Gaussian filters
+
+sigmas = [4, 8, 12, 16]
+n = min(random_neuron, spikes_matrix_filtered.shape[1] - 1)
+
+raw_traces = preprocess_spikes(spikes_matrix_filtered)
+raw_trace = raw_traces[:, n]
+
+for s in sigmas:
+    sm = gaussian_filter1d(raw_trace.astype(float), sigma=s, axis=0, mode='nearest')
+    axs[1].plot(time_filtered, sm, label=f'σ={s}', linewidth=1.25)
+
+axs[1].set_title(f'Neuron {n} smoothed with multiple σ')
+axs[1].set_xlabel('Time (samples)')
+axs[1].set_ylabel('Activity (a.u.)')
+axs[1].legend(loc='upper right', ncol=2, fontsize=9, frameon=False)
+
+# --- Helpers for heatmaps
+def smooth_and_scale(mat, sigma):
+    """Gaussian smooth across time and scale each neuron to [0,1] for visualization."""
+    sm = gaussian_filter1d(mat.astype(float), sigma=sigma, axis=0, mode='nearest')
+    # Min-max per neuron to emphasize temporal structure in the heatmap
+    mn = sm.min(axis=0, keepdims=True)
+    mx = sm.max(axis=0, keepdims=True)
+    # Avoid divide-by-zero
+    scaled = (sm - mn) / np.maximum(mx - mn, 1e-12)
+    return sm, scaled
+
+# --- 3) Heatmap (σ=8), neurons sorted by time of max activity (on σ=8)
+sigma_sort_1 = 8
+sm8, sc8 = smooth_and_scale(spikes_matrix_filtered, sigma=sigma_sort_1)
+tmax8 = np.argmax(sm8, axis=0)             # time-of-peak for each neuron
+order8 = np.argsort(tmax8)                  # neurons sorted by peak time
+H8 = sc8[:, order8].T                       # (neurons x time)
+
+im3 = axs[2].imshow(H8, aspect='auto', origin='lower',
+                    extent=[time_filtered[0], time_filtered[-1], 0, H8.shape[0]])
+axs[2].set_title(f'All neurons heatmap (σ={sigma_sort_1}), sorted by peak time (σ={sigma_sort_1})')
+axs[2].set_xlabel('Time (samples)')
+axs[2].set_ylabel('Neuron (sorted)')
+cbar3 = plt.colorbar(im3, ax=axs[2], fraction=0.046, pad=0.04)
+cbar3.set_label('Scaled activity')
+
+# --- 4) Heatmap (σ=20), neurons sorted by time of max activity (on σ=20)
+sigma_sort_2 = 20
+sm20, sc20 = smooth_and_scale(spikes_matrix_filtered, sigma=sigma_sort_2)
+tmax20 = np.argmax(sm20, axis=0)
+order20 = np.argsort(tmax20)
+H20 = sc20[:, order20].T
+
+im4 = axs[3].imshow(H20, aspect='auto', origin='lower',
+                    extent=[time_filtered[0], time_filtered[-1], 0, H20.shape[0]])
+axs[3].set_title(f'All neurons heatmap (σ={sigma_sort_2}), sorted by peak time (σ={sigma_sort_2})')
+axs[3].set_xlabel('Time (samples)')
+axs[3].set_ylabel('Neuron (sorted)')
+cbar4 = plt.colorbar(im4, ax=axs[3], fraction=0.046, pad=0.04)
+cbar4.set_label('Scaled activity')
+
+plt.tight_layout()
+plt.savefig(os.path.join(figures_directory + 'heatmap_example_2.svg'))
+plt.show()

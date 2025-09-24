@@ -12,7 +12,7 @@ for rat_index in range(0,4):
         session_directory = rat_names[rat_index]+'_'+str(rat_sessions[rat_names[rat_index]][session_index])
 
         channels = channel_organization[rat_names[rat_index]][rat_sessions[rat_names[rat_index]][session_index]]
-        class_file_extension = '_neuron_classification_output.pkl'
+        class_file_extension = '_neuron_classification_output_2.pkl'
         classification_file_dir = os.path.join(base_directory, 'classification', rat_names[rat_index] + '_' + rat_sessions[rat_names[rat_index]][session_index]
                                        + class_file_extension)
         with open(classification_file_dir, 'rb') as file:
@@ -52,7 +52,7 @@ for rat_index in range(0,4):
         if not os.path.exists(files_directory):
             os.makedirs(files_directory)
         # Define the filename where the dictionary will be stored
-        output_filename = rat_names[rat_index]+'_' + rat_sessions[rat_names[rat_index]][session_index] + '_stimes_classified.pkl'
+        output_filename = rat_names[rat_index]+'_' + rat_sessions[rat_names[rat_index]][session_index] + '_stimes_classified_2.pkl'
         # Open the file for writing in binary mode and dump the dictionary
         with open(os.path.join(files_directory , output_filename), 'wb') as file:
             pkl.dump(spikes_times_dict, file)
